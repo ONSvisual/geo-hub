@@ -9,7 +9,8 @@ const config = {
 		adapter: adapter({
 			// Options below are defaults
 			pages: 'build',
-			assets: 'build'
+			assets: 'build',
+			fallback: '404.html'
 		}),
 		prerender: {
 			enabled: production,

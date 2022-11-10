@@ -32,7 +32,7 @@
   <div
     bind:clientWidth={w}
     class="tiles-grid margin-bottom"
-    style:grid-template-columns="repeat({colwidth == 'full' ? '1fr' : 'auto-fit, minmax(min(' + defs[colwidth].w + 'px, 100%), 1fr))'}"
+    style:grid-template-columns="repeat({colwidth == 'full' ? '1fr' : 'auto-fill, minmax(min(' + defs[colwidth].w + 'px, 100%), 1fr))'}"
     style:grid-gap="{gridgap}px">
     <slot/>
   </div>

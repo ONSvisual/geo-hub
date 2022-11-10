@@ -4,8 +4,9 @@
 	import { afterNavigate, goto } from "$app/navigation";
 	import { base } from "$app/paths";
 	import { page } from "$app/stores";
-	import { themes, mapsources, years } from "$lib/config";
-	import { suffixer, plusminus } from "$lib/utils";
+	import { themes, geoTypes } from "$lib/config";
+	import { capitalise, makeGeoJSON, getName } from "$lib/utils";
+	import topojson from "$lib/data/ew-ctry-rgn.json";
 
 	import Titleblock from "$lib/layout/Titleblock.svelte";
 	import Headline from "$lib/layout/partial/Headline.svelte";
@@ -15,39 +16,25 @@
 	import Em from "$lib/ui/Em.svelte";
 	import Select from "$lib/ui/Select.svelte";
 	import Icon from "$lib/ui/Icon.svelte";
-	import BarChart from "$lib/chart/BarChart.svelte";
-	import ProfileChart from "$lib/chart/ProfileChart.svelte";
-	import LineChart from "$lib/chart/LineChart.svelte";
 	import { Map, MapSource, MapLayer } from "@onsvisual/svelte-maps";
 	import MapTooltip from "@onsvisual/svelte-maps/src/MapTooltip.svelte";
+    import CardFeature from "$lib/layout/partial/CardFeature.svelte";
 
 	export let data;
-	let { places, lookup, place, ew, type, child_type, count } = data;
-	$: ({ places, lookup, place, ew, type, child_type, count } = data);
+	let { places, lookup, place, type } = data;
+	$: ({ places, lookup, place, type } = data);
+	let childType;
 
-	const assets = "https://bothness.github.io/censusprofiles";
-
-	let year = years[years.length - 1];
-	$: type_keys = !type ? null : child_type ? [type.key, child_type.key] : [type.key];
+	const assets = "https://onsvisual.github.io/geo-hub";
 
 	onMount(() => {
-		if (!place) {
-			goto(`${base}/${ew.areacd}/?year=${years[years.length - 1]}`);
-		} else {
-			let yr = $page.url.searchParams.get('year');
-			year = yr ? yr : years[years.length - 1];
-		}
+		if (!place) goto(`${base}/K04000001/`);
+		if (place.childTypes[0]) childType = place.childTypes[0];
 	});
 
 	afterNavigate(() => {
-		let yr = $page.url.searchParams.get('year');
-
-		if (yr && years.includes(+yr)) {
-			year = yr;
-		} else if (place) {
-			goto(`${base}/${place.areacd}/?year=${years[years.length - 1]}`, {noscroll: true});
-		}
-
+		if (!place) goto(`${base}/K04000001/`);
+		if (place.childTypes[0]) childType = place.childTypes[0];
 		if (map) map.fitBounds(place.bounds, {padding: 20});
 	});
 
@@ -62,7 +49,7 @@
 	// Functions etc
 	function navTo(code) {
 		if (code && code != place.areacd) {
-			goto(`${base}/${code}/?year=${year}`, {noscroll: true});
+			goto(`${base}/${code}/`, {noScroll: true});
 		}
 	}
 
@@ -106,186 +93,129 @@
 </script>
 
 <svelte:head>
-	<title>{place ? `${place.areanm} census population profile` : 'Census population profiles'} - {years[0]} to {years[years.length - 1]}</title>
+	<title>{place ? `${getName(place)} census population profile` : 'Census population profiles'}</title>
 	<link rel="icon" href="{assets}/favicon.ico" />
-	<meta property="og:title" content="{place ? `${place.areanm} census population profile` : 'Census population profiles'} - {years[0]} to {years[years.length - 1]}" />
+	<meta property="og:title" content="{place ? `${getName(place)} census population profile` : 'Census population profiles'}" />
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="{place ? `${assets}/${place.areacd}/` : `${assets}/`}" />
 	<meta property="og:image" content="{assets}/img/og.png" />
 	<meta property="og:image:type" content="image/png" />
-	<meta name="description" content="{place ? `Explore census data and demographic trends for ${place.areanm}, from ${years[0]} to ${years[years.length - 1]}` : `Explore census data and demographic trends for places in England and Wales, from ${years[0]} to ${years[years.length - 1]}`}">
-	<meta property="og:description" content="{place ? `Explore census data and demographic trends for ${place.areanm}, from ${years[0]} to ${years[years.length - 1]}` : `Explore census data and demographic trends for places in England and Wales, from ${years[0]} to ${years[years.length - 1]}`}" />
-	{#if !place}
-	<meta name="google-site-verification" content="bOaidjIuCmXziEqN28CxFcoWHBVn8vQo6uekfAZZx6o" />
-	{/if}
+	<meta name="description" content="{place ? `Explore census data and demographic trends for ${getName(place)}` : `Explore census data and demographic trends for places in England and Wales`}">
+	<meta property="og:description" content="{place ? `Explore census data and demographic trends for ${getName(place)}` : `Explore census data and demographic trends for places in England and Wales`}" />
 </svelte:head>
 
-{#if place && year}
+{#if place && childType}
 <Titleblock
 	background="none"
-	breadcrumb="{place.areacd == ew.areacd ? [] : [...[...place.parents].reverse().map(p => ({label: p.areanm, url: `${base}/${p.areacd}/?year=${year}`})), {label: place.areanm}]}">
-	<Headline>{place.areanm}</Headline>
+	breadcrumb="{[{label: 'Area hub', url: `${base}/`}, ...[...place.parents].reverse().map(p => ({label: getName(p), url: `${base}/${p.areacd}/`})), {label: getName(place)}]}">
+	<Headline>{getName(place)}</Headline>
 	<Select items={places} mode="search" idKey="areacd" labelKey="areanm" {placeholder} bind:filterText loadOptions={getPostcodes} autoClear on:select={doSelect}/>
 	<p class="subtitle">
-		{#if place.areacd != ew.areacd}
-		<strong>{place.areanm}</strong> <small>({place.areacd})</small> is a {type.label_lng ? type.label_lng : type.label} in {place.parents[0].areanm}.
-		The {type.label}'s population of {format(',')(place.data.population[`${year}`])} at the time of the {year} census made it the {suffixer(place.data.population[`${year}_rank`])} largest in {lookup[type.parent].areanm}.
-		{#if place.data.population[`${year}_change`]}
-		{place.areanm} saw a population {plusminus(place.data.population[`${year}_change`], ["increase", "decrease", "change"])} of {format('.1f')(Math.abs(place.data.population[`${year}_change`]))}% from {year - 10}.
-		{/if}
-		{:else}
-		The population of <strong>{place.areanm}</strong> <small>({place.areacd})</small> was {format(',')(place.data.population[`${year}`])} at the time of the {year}
-		{#if place.data.population[`${year}_change`]}
-		census, {plusminus(place.data.population[`${year}_change`], ["an increase", "a decrease", "a change"])} of {format('.1f')(Math.abs(place.data.population[`${year}_change`]))}% from {year - 10}.
-		{:else}
-		census.
-		{/if}
+		{#if place.areacd != "K04000001"}
+		<strong>{capitalise(getName(place, "text"))}</strong> <small>({place.areacd})</small> is a {place.typenm} {getName(place.parents[0], "in")}.
 		{/if}
 	</p>
 </Titleblock>
 
 <Content>
-	<Cards title="Demographic data for {place.areanm}">
-		<span slot="meta">
-			<select on:change={e => goto(`${base}/${place.areacd}/?year=${e.target.value}`, {noscroll: true})}>
-				{#each years as y}
-				<option value={y} selected={y == year}>Census {y}</option>
-				{/each}
-			</select>
-		</span>
-		<Card title="Population">
-			<div class="num-big">
-				{format(',')(place.data.population[`${year}`])}
-				{#if count > 1}
-				<div class="btn-group">
-					<button class="btn-chevron" disabled={!place.data.population[`${year}_next`]} on:click={() => goto(`${base}/${place.data.population[`${year}_next`]}/?year=${year}`, {noscroll: true})}><Icon type="chevron" rotation={90}/></button>
-					<button class="btn-chevron" disabled={!place.data.population[`${year}_prev`]} on:click={() => goto(`${base}/${place.data.population[`${year}_prev`]}/?year=${year}`, {noscroll: true})}><Icon type="chevron" rotation={-90}/></button>
-				</div>
-				{/if}
-			</div>
-			<div class="num-suffix">people in {year}</div>
-			{#if place.areacd != ew.areacd}
-			<div class="num-desc"><Em color="lightgrey">{suffixer(place.data.population[`${year}_rank`])} largest</Em> of {count} {type.plural} in {lookup[type.parent].areanm}</div>
-			{/if}
-		</Card>
-		<Card title="10 year change">
-			<div class="num-big">
-				{#if place.data.population[`${year}_change`]}
-				{plusminus(place.data.population[`${year}_change`])}{format('.1f')(Math.abs(place.data.population[`${year}_change`]))}%
-				{:else}
-				N/A
-				{/if}
-				{#if count > 1}
-				<div class="btn-group">
-					<button class="btn-chevron" disabled={!place.data.population[`${year}_change_next`]} on:click={() => goto(`${base}/${place.data.population[`${year}_change_next`]}/?year=${year}`, {noscroll: true})}><Icon type="chevron" rotation={90}/></button>
-					<button class="btn-chevron" disabled={!place.data.population[`${year}_change_prev`]} on:click={() => goto(`${base}/${place.data.population[`${year}_change_prev`]}/?year=${year}`, {noscroll: true})}><Icon type="chevron" rotation={-90}/></button>
-				</div>
-				{/if}
-			</div>
-			<div class="num-suffix">{plusminus(place.data.population[`${year}_change`], ["more people than", "fewer people than", "compared to"])} {year - 10}</div>
-			{#if place.areacd != ew.areacd}
-			<div class="num-desc">
-				{#if place.data.population[`${year}_change`]}
-				<Em color="lightgrey">{suffixer(place.data.population[`${year}_change_rank`])} largest increase</Em> of {count} {type.plural} in {lookup[type.parent].areanm}
-				{:else}
-				Comparable data not available for {year - 10}
-				{/if}
-			</div>
-			{/if}
-		</Card>
-		<Card title="Change since 1981">
-			<LineChart data={place.areacd == ew.areacd ? [place.data.population] : [place.data.population, ew.data.population]} zKey="areanm" xDomain={years} xVal={year}/>
-		</Card>
-		<Card title="Density">
-			<div class="num-big">
-				{format(',.0f')(place.data.density[`${year}`])}
-				{#if count > 1}
-				<div class="btn-group">
-					<button class="btn-chevron btn-right" disabled={!place.data.density[`${year}_next`]} on:click={() => goto(`${base}/${place.data.density[`${year}_next`]}/?year=${year}`, {noscroll: true})}><Icon type="chevron" rotation={90}/></button>
-					<button class="btn-chevron btn-left" disabled={!place.data.density[`${year}_prev`]} on:click={() => goto(`${base}/${place.data.density[`${year}_prev`]}/?year=${year}`, {noscroll: true})}><Icon type="chevron" rotation={-90}/></button>
-				</div>
-				{/if}
-			</div>
-			<div class="num-suffix">people per square km</div>
-			{#if place.areacd != ew.areacd}
-			<div class="num-desc"><Em color="lightgrey">{suffixer(place.data.density[`${year}_rank`])} densest</Em> of {count} {type.plural} in {lookup[type.parent].areanm}</div>
-			{/if}
-		</Card>
-		<Card title="Age profile">
-			<ProfileChart data={place.areacd == ew.areacd ? place.data.age : [...place.data.age, ...ew.data.age]} xKey="category" yKey="{year}_perc" zKey="areanm"/>
-		</Card>
-		<Card title="Sex">
-			<BarChart data={place.areacd == ew.areacd ? place.data.sex : [...place.data.sex, ...ew.data.sex]} xKey="{year}_perc" yKey="category" zKey="areanm"/>
-		</Card>
-	</Cards>
-
 	<Cards title="Explore related areas">
 		<Card colspan={2} rowspan={2} blank>
 			<div style:height="450px">
 				<Map bind:map style="{base}/data/mapstyle.json" location={{bounds: place.bounds}} options={{fitBoundsOptions: {padding: 20}, maxBounds: [-12,47,7,62]}} controls>
-					{#each mapsources as s}
-					<MapSource id={s.key} type="vector" url={s.url} layer={s.key} promoteId={s.promoteId} maxzoom={8} props={{bounds: [-6.3603,49.88234,1.76357,55.8112]}}>
-						{#each s.layers as l}
-						{#if type_keys.includes(l.key)}
+					{#each geoTypes as geo}
+					{console.log(geo.key)}
+					<MapSource
+						id={geo.key}
+						type={geo.source.type}
+						url={geo.source.type === "vector" ? geo.source.url : null}
+						data={geo.source.type === "geojson" ? makeGeoJSON(topojson, geo.key) : null}
+						layer={geo.source.type === "vector" ? geo.key : null} promoteId={geo.source.promoteId}
+						minzoom={geo.source.minzoom ? geo.source.minzoom : 0} maxzoom={12}
+						props={geo.source.type === "vector" ? {bounds: [-6.3603,49.88234,1.76357,55.8112]} : {}}>
 						<MapLayer
-							id="{l.key}-fill"
+							id="{geo.key}-fill"
 							type="fill"
 							paint={{
-								'fill-color': l.key == type.key ? ['case', ['==', ['feature-state', 'selected'], true], 'rgb(17,140,123)', 'grey'] : 'rgb(17,140,123)',
+								'fill-color': geo.key === type.key ? ['case', ['==', ['feature-state', 'selected'], true], 'rgb(17,140,123)', 'grey'] : 'rgb(17,140,123)',
 								'fill-opacity': ['case', ['==', ['feature-state', 'hovered'], true], 0.3, 0.1]
 							}}
-							filter={type.key == 'lad' ? l.filter :
-								l.key == type.key ? [...l.filter, ["!=", "areacd", place.areacd]] : 
-								[...l.filter, ["in", "areacd", ...place.children.map(d => d.areacd)]]}
+							visible={geo.key === type.key || geo.key == childType?.key}
+							filter={!childType ? null :
+								geo.key === type.key ? ["!=", "areacd", place.areacd] : 
+								["in", "areacd", ...place.children.map(d => d.areacd)]}
 							hover let:hovered select selected={place.areacd}
 							on:select={mapSelect}>
-							<MapTooltip content={hovered ? lookup[hovered].areanm : ''}/>
+							<!-- <MapTooltip content={hovered ? lookup[hovered].areanm : ''}/> -->
 						</MapLayer>
 						<MapLayer
-							id="{l.key}-line"
+							id="{geo.key}-line"
 							type="line"
-							paint={{'line-color': l.key == type.key ? 'grey' : 'rgb(17,140,123)', 'line-width': 1}}
-							filter={l.key == type.key ?
-								[...l.filter, ["!=", "areacd", place.areacd]] : 
-								[...l.filter, ["in", "areacd", ...place.children.map(d => d.areacd)]]}/>
+							paint={{'line-color': geo.key == type.key ? 'grey' : 'rgb(17,140,123)', 'line-width': 1}}
+							visible={geo.key === type.key || geo.key == childType?.key}
+							filter={geo.key == type.key ?
+								["!=", "areacd", place.areacd] : 
+								["in", "areacd", ...place.children.map(d => d.areacd)]}/>
 						<MapLayer
-							id="{l.key}-active"
+							id="{geo.key}-active"
 							type="line"
 							paint={{'line-color': 'rgb(17,140,123)', 'line-width': 2}}
-							filter={[...l.filter, ["==", "areacd", place.areacd]]}/>
-						{/if}
-						{/each}
+							visible={geo.key === type.key}
+							filter={["==", "areacd", place.areacd]}/>
 					</MapSource>
 					{/each}
 				</Map>
 			</div>
 		</Card>
-		<Card title="Parent areas of {place.areanm}">
+		<Card title="Parent areas of {getName(place)}">
 			{#if place.parents[0]}
 			{#each [...place.parents].reverse() as parent, i}
 			<span class="parent" style:margin-left="{i == 0 ? 0 : `${(i - 1) * 20}px`}">
 				{#if i != 0}<Icon type="subdir"/>{/if}
-				<a href="{base}/{parent.areacd}/?year={year}" sveltekit:noscroll>{parent.areanm}</a>
+				<a href="{base}/{parent.areacd}/" data-sveltekit-noscroll>{getName(parent)}</a>
 			</span>
 			{/each}
 			{:else}
 			<span class="muted">No parent areas</span>
 			{/if}
 		</Card>
-		<Card title="Areas in {place.areanm}">
+		<Card title="Areas {getName(place, "in")}">
 			{#if place.children[0]}
-			{#each place.children as child, i}
-			<a href="{base}/{child.areacd}/?year={year}" sveltekit:noscroll>{child.areanm}</a>{i == place.children.length - 1 ? '' : ', '} 
+			{#if place.childTypes[1]}
+			<select bind:value={childType} style:display="block">
+				{#each place.childTypes as type}
+				<option value={type}>{capitalise(type.plural)}</option>
+				{/each}
+			</select>
+			{:else}
+			<span class="type-label">{childType.plural}</span><br/>
+			{/if}
+			{#each place.children.filter(c => childType.codes.includes(c.areacd.slice(0, 3))) as child, i}
+			<a href="{base}/{child.areacd}/" data-sveltekit-noscroll>{getName(child)}</a>{i == place.children.length - 1 ? '' : ', '} 
 			{/each}
 			{:else}
-			<span class="muted">No areas available within {place.areanm}</span>
+			<span class="muted">No areas available within {getName(place)}</span>
 			{/if}
 		</Card>
+	</Cards>
+
+	<Cards title="Interactive content for {getName(place, "text")}">
+		{#if ["ew", "lad", "msoa", "oa"].includes(type.key)}
+		<CardFeature title="Census maps" url="https://www.ons.gov.uk/census/maps/?{type.key}={place.areacd}" description="See how {getName(place, "text")} compares to other areas" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/populationandmigration/populationestimates/articles/censusmaps/2022-11-02/b178c24d.png"/>
+		{/if}
+		{#if !["ew", "ctry", "rgn"].includes(type.key)}
+		<CardFeature title="Custom profiles" url="https://stately-salamander-b9768e.netlify.app/build/#{place.areacd}" description="Build a custom area profile for {getName(place, "text")}" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/personalandhouseholdfinances/incomeandwealth/articles/mappingincomedeprivationatalocalauthoritylevel/2021-05-24/96c97858.png"/>
+		{/if}
+		{#if type.key === "lad"}
+		<CardFeature title="Area reports" url="https://area-reports.netlify.app/{place.areacd}" description="Read how {getName(place, "text")} has changed since the 2011 Census" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/populationandmigration/populationestimates/articles/howthepopulationchangedwhereyoulivecensus2021/2022-06-28/fb1398a9.png"/>
+		<CardFeature title="Census quiz" url="https://census-quiz.netlify.app/#{place.areacd}" description="Build a custom area profile for {getName(place, "text")}" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/wellbeing/articles/areyoungpeopledetachedfromtheirneighbourhoods/2019-07-24/d083b77e.png"/>
+		{/if}
+		<CardFeature title="Census map game" url="https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/articles/playthecensus2021populationmapgame/2022-06-28" description="Play the higher-or-lower map game with census data" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/populationandmigration/populationestimates/articles/playthecensus2021populationmapgame/2022-06-28/cb85ea78.png"/>
+		<CardFeature title="Story of the census" url="https://www.ons.gov.uk/visualisations/storyofthecensus/" description="A history of the census, from 1801 to 2021" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/populationandmigration/populationestimates/articles/historyofthecensus1801to2021/2022-06-20/e8d29221.png"/>
 	</Cards>
 </Content>
 {:else if !place}
 <Content>
-	<a class="redirect" href="{base}/{ew.areacd}/?year={years[years.length - 1]}">Loading England and Wales...</a>
+	<a class="redirect" href="{base}/K04000001/">Loading England and Wales...</a>
 </Content>
 {/if}
 
@@ -322,20 +252,29 @@
 	}
 	select {
 		appearance: none;
-		background: #206095 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8"><path d="M1.5.3L6 5.4 10.5.3c.2-.2.4-.2.6 0l.7.7c.1.2.1.4 0 .5L6.3 7.7c-.2.2-.4.2-.6 0L.2 1.6C.1 1.4.1 1.2.2 1L.9.3c.2-.1.4-.1.6 0z" fill="white"/></svg>') padding-box no-repeat;
+		background: rgb(144, 32, 130) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8"><path d="M1.5.3L6 5.4 10.5.3c.2-.2.4-.2.6 0l.7.7c.1.2.1.4 0 .5L6.3 7.7c-.2.2-.4.2-.6 0L.2 1.6C.1 1.4.1 1.2.2 1L.9.3c.2-.1.4-.1.6 0z" fill="white"/></svg>') padding-box no-repeat;
 		background-position: calc(100% - 10px) 50%;
 		background-size: 16px;
 		color: white;
 		font-weight: bold;
 		border: none;
-		border-radius: 0;
-		padding: 5px 36px 5px 9px;
-		margin: 0 8px;
+		border-radius: 3px;
+		padding: 4px 33px 4px 6px;
+		margin: 0;
 		font-size: 1rem;
-		transform: translateY(-2px);
 	}
 	select:focus {
 		outline: 4px solid orange;
+	}
+	.type-label {
+		display: inline-block;
+		background-color: rgb(144, 32, 130);
+		color: white;
+		font-weight: bold;
+		padding: 1px 10px;
+		margin: 0;
+		border-radius: 3px;
+		font-size: 1rem;
 	}
 	.num-big {
 		display: flex;

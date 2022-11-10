@@ -1,7 +1,4 @@
-export const prerender = true;
-
-import { base } from "$app/paths";
-import { types } from "$lib/config";
+import { cdnUrl, geoCodesLookup, geoTypesLookup, geoNames } from "$lib/config";
 
 export async function load({ fetch, params, parent }) {
 	const stuff = await parent();
@@ -10,20 +7,22 @@ export async function load({ fetch, params, parent }) {
 
 	let place = null;
 	let type = null;
-	let child_type = null;
-	let count = null;
-	let ew = stuff.ew;
 
 	let code = params.code.replaceAll("/", "");
-	if (lookup[code]) {
-		type = types.find(t => t.codes.includes(code.slice(0,3)));
-		let res = await fetch(`${base}/data/json/${code}.json`);
-		place = await res.json();
-		count = place.type.count;
+	if (code.length === 9) {
+		let typeCode = code.slice(0, 3);
+		let res = await fetch(`${cdnUrl}/${typeCode}/${code}.json`);
+		let json = await res.json();
 
-		let type_i = types.indexOf(type);
-		child_type = type_i == types.length - 1 ? null : place.areacd == "W92000004" ? types[type_i + 2] : types[type_i + 1];
+		if (geoNames[typeCode]) json.properties.typenm = geoNames[typeCode].label; 
+		let childCodes = json.properties.children[0] ?
+				Array.from(new Set(json.properties.children.map(d => d.areacd.slice(0, 3)))) : null;
+		json.properties.childTypes = childCodes ? Array.from(new Set(childCodes.map(c => geoCodesLookup[c]))) : [];
+		if (typeCode === "E12" && code !== "E12000007") json.properties.childTypes = json.properties.childTypes.filter(c => c.key !== "lad");
+		
+		place = json.properties;
+		type = geoCodesLookup[typeCode];
 	}
 	
-    return { places, lookup, place, ew, type, child_type, count }
+  return { places, lookup, place, type }
 }

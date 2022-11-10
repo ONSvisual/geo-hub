@@ -2,12 +2,12 @@
   import "../app.css";
   import { page } from '$app/stores';
   import { base } from "$app/paths";
-  import { years } from "$lib/config";
 	import { setContext } from "svelte";
 	import { themes } from "$lib/config";
   import PhaseBanner from "$lib/layout/PhaseBanner.svelte";
-	import ONSFooterLite from "$lib/layout/ONSFooterLite.svelte";
+	import ONSFooter from "$lib/layout/ONSFooter.svelte";
   import AnalyticsBanner from "$lib/layout/AnalyticsBanner.svelte";
+  import ONSHeader from "$lib/layout/ONSHeader.svelte";
 	
   // For localisation of menu etc
   let path = $page.url.pathname;
@@ -33,25 +33,19 @@
 
 <AnalyticsBanner {analyticsId} {analyticsProps}/>
 <PhaseBanner url={survey_url}/>
+<ONSHeader/>
 
-<header style:background-color="#206095" style:color="white">
+<!-- <header style:background-color="#206095" style:color="white">
   <div class="wrapper">
-    <h1 class="title">Census population profiles, {years[0]} to {years[years.length - 1]}</h1>
+    <h1 class="title">Area hub</h1>
   </div>
-</header>
+</header> -->
 
 <main id="main" tabindex="-1">
   <slot/>
 </main>
 
-<ONSFooterLite>
-  <p class="footer-text">
-    This prototype is made using a historical census timeseries dataset covering areas in England and Wales from 1981 up to the most recent 2021 Census (<a href="https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/adhocs/14812ct210002sextimeseriescensus1981to2021" rel="external">1</a>, <a href="https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/adhocs/14813ct210003agetimeseriescensus1981to2021" rel="external">2</a>, <a href="https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/adhocs/14814ct210004sexbyagetimeseriescensus1981to2021" rel="external">3</a>, <a href="https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/adhocs/14815ct210005populationdensitytimeseriescensus1981to2021" rel="external">4</a>), and geographic data from the <a href="https://geoportal.statistics.gov.uk/" rel="external">ONS Open Geography Portal</a>. Population counts should match published ONS datasets, which are rounded to the nearest 100 people for the latest 2021 census. However, percentage figures are not official.
-  </p>
-  <p class="footer-text">
-    This project is a work in progress by the ONS digital content team, and may not lead to a final product. If you have any comments or suggestions please <a href="{survey_url}" rel="external">share them here</a>, or send a tweet/DM to project lead <a href="https://twitter.com/bothness" rel="external">Ahmad Barclay</a>. This page was coded using Svelte Kit and Maplibre GL, and the source code can be <a href="https://github.com/bothness/censusprofiles" rel="external">found here</a>.
-  </p>
-</ONSFooterLite>
+<ONSFooter/>
 
 <style>
   h1 {
