@@ -187,7 +187,7 @@
 				{/each}
 			</select>
 			{:else}
-			<span class="type-label">{childType.plural}</span><br/>
+			<span class="type-label">{capitalise(childType.plural)}</span><br/>
 			{/if}
 			{#each place.children.filter(c => childType.codes.includes(c.areacd.slice(0, 3))) as child, i}
 			<a href="{base}/{child.areacd}/" data-sveltekit-noscroll>{getName(child)}</a>{i == place.children.length - 1 ? '' : ', '} 
@@ -254,6 +254,7 @@
 		appearance: none;
 		background: rgb(144, 32, 130) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8"><path d="M1.5.3L6 5.4 10.5.3c.2-.2.4-.2.6 0l.7.7c.1.2.1.4 0 .5L6.3 7.7c-.2.2-.4.2-.6 0L.2 1.6C.1 1.4.1 1.2.2 1L.9.3c.2-.1.4-.1.6 0z" fill="white"/></svg>') padding-box no-repeat;
 		background-position: calc(100% - 10px) 50%;
+		max-width: 100%;
 		background-size: 16px;
 		color: white;
 		font-weight: bold;

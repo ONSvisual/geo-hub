@@ -61,7 +61,7 @@ export const geoTypes = [
     key: "cty",
     codes: ["E10", "E11", "E06", "W06", "E09"],
     label: "county/unitary authority",
-    plural: "counties and unitary authorities",
+    plural: "counties/unitary authorities",
     source: {
       type: "vector",
       url: "https://cdn.ons.gov.uk/maptiles/administrative/2021/cty/v1/boundaries/{z}/{x}/{y}.pbf",
