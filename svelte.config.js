@@ -18,7 +18,7 @@ const config = {
 			handleHttpError: 'warn'
 		},
 		paths: {
-			base: production ? '/censusprofiles' : ''
+			base: production ? '/geo-hub' : ''
 		},
 		trailingSlash: 'always'
 	}
