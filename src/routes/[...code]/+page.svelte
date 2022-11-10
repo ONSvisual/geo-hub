@@ -166,7 +166,7 @@
 				</Map>
 			</div>
 		</Card>
-		<Card title="Parent areas of {getName(place)}">
+		<Card title="Parent areas of {getName(place, "text")}">
 			{#if place.parents[0]}
 			{#each [...place.parents].reverse() as parent, i}
 			<span class="parent" style:margin-left="{i == 0 ? 0 : `${(i - 1) * 20}px`}">
