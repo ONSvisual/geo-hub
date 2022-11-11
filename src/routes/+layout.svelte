@@ -8,6 +8,7 @@
 	import ONSFooter from "$lib/layout/ONSFooter.svelte";
   import AnalyticsBanner from "$lib/layout/AnalyticsBanner.svelte";
   import ONSHeader from "$lib/layout/ONSHeader.svelte";
+  import CensusBanner from "$lib/layout/CensusBanner.svelte";
 	
   // For localisation of menu etc
   let path = $page.url.pathname;
@@ -34,12 +35,7 @@
 <AnalyticsBanner {analyticsId} {analyticsProps}/>
 <PhaseBanner url={survey_url}/>
 <ONSHeader/>
-
-<!-- <header style:background-color="#206095" style:color="white">
-  <div class="wrapper">
-    <h1 class="title">Area hub</h1>
-  </div>
-</header> -->
+<CensusBanner/>
 
 <main id="main" tabindex="-1">
   <slot/>

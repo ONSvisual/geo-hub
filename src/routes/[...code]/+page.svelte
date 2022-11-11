@@ -28,13 +28,23 @@
 	const assets = "https://onsvisual.github.io/geo-hub";
 
 	onMount(() => {
-		if (!place) goto(`${base}/K04000001/`);
-		if (place.childTypes[0]) childType = place.childTypes[0];
+		if (!place) {
+			goto(`${base}/K04000001/`)
+		} else if (place.childTypes[0]) {
+			childType = place.childTypes[0];
+		} else {
+			childType = null;
+		}
 	});
 
 	afterNavigate(() => {
-		if (!place) goto(`${base}/K04000001/`);
-		if (place.childTypes[0]) childType = place.childTypes[0];
+		if (!place) {
+			goto(`${base}/K04000001/`)
+		} else if (place.childTypes[0]) {
+			childType = place.childTypes[0];
+		} else {
+			childType = null;
+		}
 		if (map) map.fitBounds(place.bounds, {padding: 20});
 	});
 
@@ -93,23 +103,23 @@
 </script>
 
 <svelte:head>
-	<title>{place ? `${getName(place)} census population profile` : 'Census population profiles'}</title>
+	<title>{place ? `${getName(place)} - ONS Area hub` : 'ONS Area hub'}</title>
 	<link rel="icon" href="{assets}/favicon.ico" />
-	<meta property="og:title" content="{place ? `${getName(place)} census population profile` : 'Census population profiles'}" />
+	<meta property="og:title" content="{place ? `${getName(place)} - ONS Area hub` : 'ONS Area hub'}" />
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="{place ? `${assets}/${place.areacd}/` : `${assets}/`}" />
 	<meta property="og:image" content="{assets}/img/og.png" />
 	<meta property="og:image:type" content="image/png" />
-	<meta name="description" content="{place ? `Explore census data and demographic trends for ${getName(place)}` : `Explore census data and demographic trends for places in England and Wales`}">
-	<meta property="og:description" content="{place ? `Explore census data and demographic trends for ${getName(place)}` : `Explore census data and demographic trends for places in England and Wales`}" />
+	<meta name="description" content="{place ? `Explore content for ${getName(place)} from the ONS` : `Explore content for England and Wales from the ONS`}">
+	<meta property="og:description" content="{place ? `Explore content for ${getName(place)} from the ONS` : `Explore content for England and Wales from the ONS`}" />
 </svelte:head>
 
-{#if place && childType}
+{#if place}
 <Titleblock
 	background="none"
 	breadcrumb="{[{label: 'Area hub', url: `${base}/`}, ...[...place.parents].reverse().map(p => ({label: getName(p), url: `${base}/${p.areacd}/`})), {label: getName(place)}]}">
 	<Headline>{getName(place)}</Headline>
-	<Select items={places} mode="search" idKey="areacd" labelKey="areanm" {placeholder} bind:filterText loadOptions={getPostcodes} autoClear on:select={doSelect}/>
+	<Select items={places} mode="search" idKey="areacd" labelKey="areanm" groupKey="group" {placeholder} bind:filterText loadOptions={getPostcodes} autoClear on:select={doSelect}/>
 	<p class="subtitle">
 		{#if place.areacd != "K04000001"}
 		<strong>{capitalise(getName(place, "text"))}</strong> <small>({place.areacd})</small> is a {place.typenm} {getName(place.parents[0], "in")}.
@@ -179,7 +189,7 @@
 			{/if}
 		</Card>
 		<Card title="Areas {getName(place, "in")}">
-			{#if place.children[0]}
+			{#if childType}
 			{#if place.childTypes[1]}
 			<select bind:value={childType} style:display="block">
 				{#each place.childTypes as type}
