@@ -13,12 +13,12 @@
 	import Content from "$lib/layout/Content.svelte";
 	import Cards from "$lib/layout/Cards.svelte";
 	import Card from "$lib/layout/partial/Card.svelte";
-	import Em from "$lib/ui/Em.svelte";
+	import CardFeature from "$lib/layout/partial/CardFeature.svelte";
+	// import Em from "$lib/ui/Em.svelte";
 	import Select from "$lib/ui/Select.svelte";
 	import Icon from "$lib/ui/Icon.svelte";
 	import { Map, MapSource, MapLayer } from "@onsvisual/svelte-maps";
 	import MapTooltip from "@onsvisual/svelte-maps/src/MapTooltip.svelte";
-    import CardFeature from "$lib/layout/partial/CardFeature.svelte";
 
 	export let data;
 	let { places, lookup, place, type } = data;
@@ -27,26 +27,18 @@
 
 	const assets = "https://onsvisual.github.io/geo-hub";
 
-	onMount(() => {
+	function pageLoad() {
 		if (!place) {
 			goto(`${base}/K04000001/`)
 		} else if (place.childTypes[0]) {
-			childType = place.childTypes[0];
+			if (!place.childTypes.includes(childType)) childType = place.childTypes[0];
 		} else {
 			childType = null;
 		}
-	});
-
-	afterNavigate(() => {
-		if (!place) {
-			goto(`${base}/K04000001/`)
-		} else if (place.childTypes[0]) {
-			childType = place.childTypes[0];
-		} else {
-			childType = null;
-		}
-		if (map) map.fitBounds(place.bounds, {padding: 20});
-	});
+		if (place && map) map.fitBounds(place.bounds, {padding: 20});
+	}
+	onMount(pageLoad);
+	afterNavigate(pageLoad);
 
 	// STYLE CONFIG
 	// Set theme globally (options are 'light' or 'dark')
@@ -55,6 +47,7 @@
 	
 	// DOM Elements
 	let map = null;
+	let hovered = null;
 
 	// Functions etc
 	function navTo(code) {
@@ -153,9 +146,9 @@
 							filter={!childType ? null :
 								geo.key === type.key ? ["!=", "areacd", place.areacd] : 
 								["in", "areacd", ...place.children.map(d => d.areacd)]}
-							hover let:hovered select selected={place.areacd}
+							hover on:hover={(e) => hovered = e.detail.feature} select selected={place.areacd}
 							on:select={mapSelect}>
-							<!-- <MapTooltip content={hovered ? lookup[hovered].areanm : ''}/> -->
+							<MapTooltip content={hovered ? getName(hovered.properties) : ''}/>
 						</MapLayer>
 						<MapLayer
 							id="{geo.key}-line"
@@ -208,20 +201,26 @@
 		</Card>
 	</Cards>
 
+	{#if !["ctry", "rgn"].includes(type.key)}
 	<Cards title="Interactive content for {getName(place, "text")}">
 		{#if ["ew", "lad", "msoa", "oa"].includes(type.key)}
 		<CardFeature title="Census maps" url="https://www.ons.gov.uk/census/maps/?{type.key}={place.areacd}" description="See how {getName(place, "text")} compares to other areas" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/populationandmigration/populationestimates/articles/censusmaps/2022-11-02/b178c24d.png"/>
 		{/if}
 		{#if !["ew", "ctry", "rgn"].includes(type.key)}
-		<CardFeature title="Custom profiles" url="https://stately-salamander-b9768e.netlify.app/build/#{place.areacd}" description="Build a custom area profile for {getName(place, "text")}" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/personalandhouseholdfinances/incomeandwealth/articles/mappingincomedeprivationatalocalauthoritylevel/2021-05-24/96c97858.png"/>
+		<CardFeature title="Custom profiles" url="https://stately-salamander-b9768e.netlify.app/build/#{place.areacd}" description="Build a custom area profile for {getName(place, "text")} using census data" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/personalandhouseholdfinances/incomeandwealth/articles/mappingincomedeprivationatalocalauthoritylevel/2021-05-24/96c97858.png"/>
 		{/if}
 		{#if type.key === "lad"}
 		<CardFeature title="Area reports" url="https://area-reports.netlify.app/{place.areacd}" description="Read how {getName(place, "text")} has changed since the 2011 Census" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/populationandmigration/populationestimates/articles/howthepopulationchangedwhereyoulivecensus2021/2022-06-28/fb1398a9.png"/>
-		<CardFeature title="Census quiz" url="https://census-quiz.netlify.app/#{place.areacd}" description="Build a custom area profile for {getName(place, "text")}" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/wellbeing/articles/areyoungpeopledetachedfromtheirneighbourhoods/2019-07-24/d083b77e.png"/>
+		<CardFeature title="Census quiz" url="https://census-quiz.netlify.app/#{place.areacd}" description="Take our quiz and test your knowledge of {getName(place, "text")}" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/wellbeing/articles/areyoungpeopledetachedfromtheirneighbourhoods/2019-07-24/d083b77e.png"/>
+		{#if place.areacd.charAt(0) === 'E'}
+		<CardFeature title="Income deprivation" url="https://www.ons.gov.uk/visualisations/dvc1371/#{place.areacd}" description="Explore income deprivation at a neighbourhood level in {getName(place, "text")}" image="https://www.ons.gov.uk/resource?uri=/economy/regionalaccounts/grossdisposablehouseholdincome/articles/mappingregionaldifferencesinproductivityandhouseholdincome/2021-05-17/62372f22.png"/>
+		<CardFeature title="Health index" url="https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/healthandwellbeing/articles/howhealthhaschangedinyourlocalarea2015to2020/2022-11-09" description="See how health in {getName(place, "text")} compares to the rest of England" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/healthandsocialcare/healthandwellbeing/articles/howhealthhaschangedinyourlocalarea/2022-03-18/eb698ff5.png"/>
 		{/if}
-		<CardFeature title="Census map game" url="https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/articles/playthecensus2021populationmapgame/2022-06-28" description="Play the higher-or-lower map game with census data" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/populationandmigration/populationestimates/articles/playthecensus2021populationmapgame/2022-06-28/cb85ea78.png"/>
-		<CardFeature title="Story of the census" url="https://www.ons.gov.uk/visualisations/storyofthecensus/" description="A history of the census, from 1801 to 2021" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/populationandmigration/populationestimates/articles/historyofthecensus1801to2021/2022-06-20/e8d29221.png"/>
+		{/if}
+		<!-- <CardFeature title="Census map game" url="https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/articles/playthecensus2021populationmapgame/2022-06-28" description="Play the higher-or-lower map game with census data" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/populationandmigration/populationestimates/articles/playthecensus2021populationmapgame/2022-06-28/cb85ea78.png"/>
+		<CardFeature title="Story of the census" url="https://www.ons.gov.uk/visualisations/storyofthecensus/" description="A history of the census, from 1801 to 2021" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/populationandmigration/populationestimates/articles/historyofthecensus1801to2021/2022-06-20/e8d29221.png"/> -->
 	</Cards>
+	{/if}
 </Content>
 {:else if !place}
 <Content>
