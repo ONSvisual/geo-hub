@@ -8,7 +8,9 @@
 		<ol class="breadcrumb__list">
 			{#each links as link}
 			<li class="breadcrumb__item">
-				{#if link.url}
+				{#if link.url && link.refresh}
+				<a class="breadcrumb__link" href="{link.url}" data-sveltekit-reload>{link.label}</a>
+				{:else if link.url}
 				<a class="breadcrumb__link" href="{link.url}">{link.label}</a>
 				{:else}
 				{link.label}

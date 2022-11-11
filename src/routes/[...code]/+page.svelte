@@ -110,7 +110,7 @@
 {#if place}
 <Titleblock
 	background="none"
-	breadcrumb="{[{label: 'Area hub', url: `${base}/`}, ...[...place.parents].reverse().map(p => ({label: getName(p), url: `${base}/${p.areacd}/`})), {label: getName(place)}]}">
+	breadcrumb="{[{label: 'Area hub', url: `${base}/`, refresh: true}, ...[...place.parents].reverse().map(p => ({label: getName(p), url: `${base}/${p.areacd}/`})), {label: getName(place)}]}">
 	<Headline>{getName(place)}</Headline>
 	<Select items={places} mode="search" idKey="areacd" labelKey="areanm" groupKey="group" {placeholder} bind:filterText loadOptions={getPostcodes} autoClear on:select={doSelect}/>
 	<p class="subtitle">
