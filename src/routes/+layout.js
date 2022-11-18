@@ -7,7 +7,7 @@ import { getData, capitalise } from "$lib/utils";
 const getTypeLabel = (type) => geoNames[type] ? geoNames[type].label : geoCodesLookup[type].label;
   
 export async function load({ fetch }) {
-	let places = await getData(`${base}/data/places.csv`, fetch);
+	let places = await getData(`${base}/data/csv/places.csv`, fetch);
 	places.sort((a, b) => a.areanm.localeCompare(b.areanm));
 	let lookup = {};
 	places.forEach(d => lookup[d.areacd] = d);
