@@ -11,7 +11,7 @@ export function getName(props, context = "default") {
   let name = props.hclnm ? props.hclnm : props.areanm ? props.areanm : props.areacd;
   let island = name.startsWith("Isle");
   let region = props.areacd.slice(0,3) === "E12" && !["E12000003", "E12000007"].includes(props.areacd);
-  name = name.split(",")[0].replace("&", "and");
+  name = name.replace("&", "and");
   if (["in","text"].includes(context)) {
     if (island || region) name = "the " + name;
   }

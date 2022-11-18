@@ -63,7 +63,7 @@
 		if (filterText.length > 2 && /\d/.test(filterText)) {
 			let res = await fetch(`https://api.postcodes.io/postcodes/${filterText}/autocomplete`);
 			let json = await res.json();
-			return json.result.map(d => ({areacd: d, areanm: d, postcode: true}));
+			return json.result.map(d => ({areacd: d, areanm: d, group: "", postcode: true}));
 		} else if (filterText.length > 2) {
 			return places.filter(p => p.areanm.toLowerCase().slice(0, filterText.length) == filterText.toLowerCase());
 		}
@@ -213,7 +213,7 @@
 		<CardFeature title="Area reports" url="https://area-reports.netlify.app/{place.areacd}" description="Read how {getName(place, "text")} has changed since the 2011 Census" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/populationandmigration/populationestimates/articles/howthepopulationchangedwhereyoulivecensus2021/2022-06-28/fb1398a9.png"/>
 		<CardFeature title="Census quiz" url="https://census-quiz.netlify.app/#{place.areacd}" description="Take our quiz and test your knowledge of {getName(place, "text")}" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/wellbeing/articles/areyoungpeopledetachedfromtheirneighbourhoods/2019-07-24/d083b77e.png"/>
 		{#if place.areacd.charAt(0) === 'E'}
-		<CardFeature title="Income deprivation" url="https://www.ons.gov.uk/visualisations/dvc1371/#{place.areacd}" description="Explore income deprivation at a neighbourhood level in {getName(place, "text")}" image="https://www.ons.gov.uk/resource?uri=/economy/regionalaccounts/grossdisposablehouseholdincome/articles/mappingregionaldifferencesinproductivityandhouseholdincome/2021-05-17/62372f22.png"/>
+		<CardFeature title="Income deprivation" url="https://www.ons.gov.uk/visualisations/dvc1371/#/{place.areacd}" description="Explore income deprivation at a neighbourhood level in {getName(place, "text")}" image="https://www.ons.gov.uk/resource?uri=/economy/regionalaccounts/grossdisposablehouseholdincome/articles/mappingregionaldifferencesinproductivityandhouseholdincome/2021-05-17/62372f22.png"/>
 		<CardFeature title="Health index" url="https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/healthandwellbeing/articles/howhealthhaschangedinyourlocalarea2015to2020/2022-11-09" description="See how health in {getName(place, "text")} compares to the rest of England" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/healthandsocialcare/healthandwellbeing/articles/howhealthhaschangedinyourlocalarea/2022-03-18/eb698ff5.png"/>
 		{/if}
 		{/if}

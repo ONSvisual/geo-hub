@@ -18,8 +18,21 @@ export async function load({ fetch, params, parent }) {
 		let childCodes = json.properties.children[0] ?
 				Array.from(new Set(json.properties.children.map(d => d.areacd.slice(0, 3)))) : null;
 		json.properties.childTypes = childCodes ? Array.from(new Set(childCodes.map(c => geoCodesLookup[c]))) : [];
-		if (typeCode === "E12" && code !== "E12000007") json.properties.childTypes = json.properties.childTypes.filter(c => c.key !== "lad");
-		
+		if (typeCode === "E12") {
+			json.properties.childTypes = json.properties.childTypes.filter(c => c.key !== "lad");
+			if (code === "E12000007") {
+				json.properties.childTypes = [
+					{
+						key: "lad",
+						codes: ["E09"],
+						label: "borough",
+						plural: "boroughs"
+					},
+					...json.properties.childTypes
+				];
+			}
+		} 
+
 		place = json.properties;
 		type = geoCodesLookup[typeCode];
 	}

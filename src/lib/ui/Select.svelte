@@ -98,8 +98,7 @@
 		box-sizing: border-box;
 		margin: 0;
 		border: 0;
-	}
-	.selectbox {
+		max-width: 450px;
     --border: 2px solid var(--borderColor, #206095);
     --borderRadius: 0;
 		--listBorderRadius: 0;
@@ -140,6 +139,7 @@
 	}
 	:global(.selectbox > .selectContainer) {
 		box-shadow: inset -40px 0px #206095;
+		z-index: 10;
 	}
 	:global(.selectbox.multi-selected > .selectContainer) {
 		box-shadow: none !important;
