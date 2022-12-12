@@ -5,7 +5,7 @@
 	import { base } from "$app/paths";
 	import { page } from "$app/stores";
 	import { themes, geoTypes } from "$lib/config";
-	import { capitalise, makeGeoJSON, getName } from "$lib/utils";
+	import { capitalise, makeGeoJSON, getName, getParent, parseTemplate, addArticle } from "$lib/utils";
 	import topojson from "$lib/data/ew-ctry-rgn.json";
 
 	import Titleblock from "$lib/layout/Titleblock.svelte";
@@ -21,8 +21,8 @@
 	import MapTooltip from "@onsvisual/svelte-maps/src/MapTooltip.svelte";
 
 	export let data;
-	let { places, lookup, place, type } = data;
-	$: ({ places, lookup, place, type } = data);
+	let { places, lookup, place, type, links } = data;
+	$: ({ places, lookup, place, type, links } = data);
 	let childType;
 
 	const assets = "https://onsvisual.github.io/geo-hub";
@@ -103,8 +103,8 @@
 	<meta property="og:url" content="{place ? `${assets}/${place.areacd}/` : `${assets}/`}" />
 	<meta property="og:image" content="{assets}/img/og.png" />
 	<meta property="og:image:type" content="image/png" />
-	<meta name="description" content="{place ? `Explore content for ${getName(place)} from the ONS` : `Explore content for England and Wales from the ONS`}">
-	<meta property="og:description" content="{place ? `Explore content for ${getName(place)} from the ONS` : `Explore content for England and Wales from the ONS`}" />
+	<meta name="description" content="{place ? `Explore content for ${getName(place, 'the')} from the ONS` : `Explore content for England and Wales from the ONS`}">
+	<meta property="og:description" content="{place ? `Explore content for ${getName(place, 'the')} from the ONS` : `Explore content for England and Wales from the ONS`}" />
 </svelte:head>
 
 {#if place}
@@ -115,13 +115,14 @@
 	<Select items={places} mode="search" idKey="areacd" labelKey="areanm" groupKey="group" {placeholder} bind:filterText loadOptions={getPostcodes} autoClear on:select={doSelect}/>
 	<p class="subtitle">
 		{#if place.areacd != "K04000001"}
-		<strong>{capitalise(getName(place, "text"))}</strong> <small>({place.areacd})</small> is a {place.typenm} {getName(place.parents[0], "in")}.
+		<strong>{capitalise(getName(place, "the"))}</strong> <small>({place.areacd})</small> is {addArticle(place.typenm)} {getName(place.parents[0], "in")}.
 		{/if}
 	</p>
+  <p style:margin-top="-18px"><Icon type="touch"/> <a href="#interactive">View interactive content</a></p>
 </Titleblock>
 
 <Content>
-	<Cards title="Explore related areas">
+	<Cards title="Explore related areas" id="related">
 		<Card colspan={2} rowspan={2} blank>
 			<div style:height="450px">
 				<Map bind:map style="{base}/data/mapstyle.json" location={{bounds: place.bounds}} options={{fitBoundsOptions: {padding: 20}, maxBounds: [-12,47,7,62]}} controls>
@@ -169,7 +170,7 @@
 				</Map>
 			</div>
 		</Card>
-		<Card title="Parent areas of {getName(place, "text")}">
+		<Card title="Parent areas of {getName(place, "the")}">
 			{#if place.parents[0]}
 			{#each [...place.parents].reverse() as parent, i}
 			<span class="parent" style:margin-left="{i == 0 ? 0 : `${(i - 1) * 20}px`}">
@@ -201,26 +202,17 @@
 		</Card>
 	</Cards>
 
-	{#if !["ctry", "rgn"].includes(type.key)}
-	<Cards title="Interactive content for {getName(place, "text")}">
-		{#if ["ew", "lad", "msoa", "oa"].includes(type.key)}
-		<CardFeature title="Census maps" url="https://www.ons.gov.uk/census/maps/?{type.key}={place.areacd}" description="See how {getName(place, "text")} compares to other areas" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/populationandmigration/populationestimates/articles/censusmaps/2022-11-02/b178c24d.png"/>
-		{/if}
-		{#if !["ew", "ctry", "rgn"].includes(type.key)}
-		<CardFeature title="Custom profiles" url="https://stately-salamander-b9768e.netlify.app/build/#{place.areacd}" description="Build a custom area profile for {getName(place, "text")} using census data" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/personalandhouseholdfinances/incomeandwealth/articles/mappingincomedeprivationatalocalauthoritylevel/2021-05-24/96c97858.png"/>
-		{/if}
-		{#if type.key === "lad"}
-		<CardFeature title="Area reports" url="https://area-reports.netlify.app/{place.areacd}" description="Read how {getName(place, "text")} has changed since the 2011 Census" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/populationandmigration/populationestimates/articles/howthepopulationchangedwhereyoulivecensus2021/2022-06-28/fb1398a9.png"/>
-		<CardFeature title="Census quiz" url="https://census-quiz.netlify.app/#{place.areacd}" description="Take our quiz and test your knowledge of {getName(place, "text")}" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/wellbeing/articles/areyoungpeopledetachedfromtheirneighbourhoods/2019-07-24/d083b77e.png"/>
-		{#if place.areacd.charAt(0) === 'E'}
-		<CardFeature title="Income deprivation" url="https://www.ons.gov.uk/visualisations/dvc1371/#/{place.areacd}" description="Explore income deprivation at a neighbourhood level in {getName(place, "text")}" image="https://www.ons.gov.uk/resource?uri=/economy/regionalaccounts/grossdisposablehouseholdincome/articles/mappingregionaldifferencesinproductivityandhouseholdincome/2021-05-17/62372f22.png"/>
-		<CardFeature title="Health index" url="https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/healthandwellbeing/articles/howhealthhaschangedinyourlocalarea2015to2020/2022-11-09" description="See how health in {getName(place, "text")} compares to the rest of England" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/healthandsocialcare/healthandwellbeing/articles/howhealthhaschangedinyourlocalarea/2022-03-18/eb698ff5.png"/>
-		{/if}
-		{/if}
-		<!-- <CardFeature title="Census map game" url="https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/articles/playthecensus2021populationmapgame/2022-06-28" description="Play the higher-or-lower map game with census data" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/populationandmigration/populationestimates/articles/playthecensus2021populationmapgame/2022-06-28/cb85ea78.png"/>
-		<CardFeature title="Story of the census" url="https://www.ons.gov.uk/visualisations/storyofthecensus/" description="A history of the census, from 1801 to 2021" image="https://www.ons.gov.uk/resource?uri=/peoplepopulationandcommunity/populationandmigration/populationestimates/articles/historyofthecensus1801to2021/2022-06-20/e8d29221.png"/> -->
+	<Cards title="Interactive content for {getName(place, "the")}" id="interactive">
+    {#each links as link}
+    {#if link.geocodes.includes(place.typecd)}
+    <CardFeature title={link.title} url="{parseTemplate(link.url, place)}" description="{parseTemplate(link.description, place)}" image="{link.image}"/>
+    {:else}
+    {#each getParent(link.geocodes, place.parents) as parent}
+    <CardFeature title={link.title} url="{parseTemplate(link.url, parent)}" description="{parseTemplate(link.description, parent)}" image="{link.image}"/>
+    {/each}
+    {/if}
+    {/each}
 	</Cards>
-	{/if}
 </Content>
 {:else if !place}
 <Content>
@@ -229,6 +221,9 @@
 {/if}
 
 <style>
+  :global(html) {
+    scroll-behavior: smooth;
+  }
 	:global(.tile) {
 		color: black;
 		font-size: 1rem;

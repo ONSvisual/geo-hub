@@ -4,6 +4,7 @@
 	import { writable } from 'svelte/store';
 
   export let title = null;
+  export let id = null;
   export let colwidth = "medium"; // narrow, medium, wide or full
   export let gridgap = 16;
 
@@ -26,7 +27,7 @@
 
 <div class="tiles">
   {#if title}
-	<h2>{title}</h2>
+	<h2 {id}>{title}</h2>
   <slot name="meta"/>
   {/if}
   <div

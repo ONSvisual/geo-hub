@@ -17,6 +17,7 @@ export async function load({ fetch }) {
 		d.parent ? `${capitalise(getTypeLabel(type))} in ${lookup[d.parent].areanm}` :
 		capitalise(getTypeLabel(type));
 	});
+  let links = await getData(`${base}/data/csv/links.csv`, fetch);
 
-	return { places, lookup };
+	return { places, lookup, links };
 }

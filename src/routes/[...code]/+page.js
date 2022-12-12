@@ -4,6 +4,7 @@ export async function load({ fetch, params, parent }) {
 	const stuff = await parent();
 	let places = stuff.places;
 	let lookup = stuff.lookup;
+	let links = stuff.links;
 
 	let place = null;
 	let type = null;
@@ -37,5 +38,5 @@ export async function load({ fetch, params, parent }) {
 		type = geoCodesLookup[typeCode];
 	}
 	
-  return { places, lookup, place, type }
+  return { places, lookup, place, type, links }
 }
