@@ -19,7 +19,7 @@ export async function load({ fetch }) {
 	});
   let links = await getData(`${base}/data/csv/links.csv`, fetch);
   links.forEach((link, i) => {
-    if (link.url && !link.url.includes("http")) links[i].url = base + link.url;
+    if (link.image && !link.image.startsWith("http")) links[i].image = base + link.image;
   });
 
 	return { places, lookup, links };
