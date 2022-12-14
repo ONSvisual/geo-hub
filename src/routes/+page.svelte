@@ -32,7 +32,7 @@
 </svelte:head>
 
 <Titleblock
-	breadcrumb="{[{label: 'Home', url: '/', refresh: true}]}">
+	breadcrumb="{[{label: 'Home', url: '/', refresh: true}, {label: 'Find a geographic area'}]}">
 	<Headline>Find a geographic area</Headline>
 	<p class="subtitle">
 		Get facts, figures and interactive content for places in England and Wales.
