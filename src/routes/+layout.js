@@ -18,8 +18,8 @@ export async function load({ fetch }) {
 		capitalise(getTypeLabel(type));
 	});
   let links = await getData(`${base}/data/csv/links.csv`, fetch);
-  links.forEach(link => {
-    if (link.url && !link.url.includes("http")) link.url = base + link.url;
+  links.forEach((link, i) => {
+    if (link.url && !link.url.includes("http")) links[i].url = base + link.url;
   });
 
 	return { places, lookup, links };
