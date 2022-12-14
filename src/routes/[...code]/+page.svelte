@@ -1,11 +1,10 @@
 <script>
-	import { onMount, setContext } from "svelte";
-	import { format } from "d3-format";
+	import { onMount } from "svelte";
 	import { afterNavigate, goto } from "$app/navigation";
 	import { base } from "$app/paths";
 	import { page } from "$app/stores";
-	import { themes, geoTypes } from "$lib/config";
-	import { capitalise, makeGeoJSON, getName, getParent, parseTemplate, addArticle } from "$lib/utils";
+	import { assets, geoTypes } from "$lib/config";
+	import { capitalise, makeGeoJSON, getName, getParent, parseTemplate, addArticle, getPlace, makePath } from "$lib/utils";
 	import topojson from "$lib/data/ew-ctry-rgn.json";
 
 	import Titleblock from "$lib/layout/Titleblock.svelte";
@@ -14,23 +13,28 @@
 	import Cards from "$lib/layout/Cards.svelte";
 	import Card from "$lib/layout/partial/Card.svelte";
 	import CardFeature from "$lib/layout/partial/CardFeature.svelte";
-	// import Em from "$lib/ui/Em.svelte";
 	import Select from "$lib/ui/Select.svelte";
 	import Icon from "$lib/ui/Icon.svelte";
 	import { Map, MapSource, MapLayer } from "@onsvisual/svelte-maps";
 	import MapTooltip from "@onsvisual/svelte-maps/src/MapTooltip.svelte";
 
 	export let data;
-	let { places, lookup, place, type, links } = data;
-	$: ({ places, lookup, place, type, links } = data);
-	let childType;
+	let { places, lookup, links } = data;
+	let place, type, childType;
 
-	const assets = "https://onsvisual.github.io/geo-hub";
-
-	function pageLoad() {
-		if (!place) {
-			goto(`${base}/K04000001/`)
-		} else if (place.childTypes[0]) {
+	async function pageLoad() {
+    let code = $page.url.searchParams.get("code");
+		if (!data.place && code) {
+      let newData = await getPlace(code);
+      type = newData.type;
+      place = newData.place;
+    } else {
+      place = data.place;
+      type = data.type;
+    }
+    if (!place) {
+			goto(`${base}/`)
+		} else if (place && place.childTypes[0]) {
 			if (!place.childTypes.includes(childType)) childType = place.childTypes[0];
 		} else {
 			childType = null;
@@ -39,11 +43,6 @@
 	}
 	onMount(pageLoad);
 	afterNavigate(pageLoad);
-
-	// STYLE CONFIG
-	// Set theme globally (options are 'light' or 'dark')
-	let theme = "light";
-	setContext("theme", themes[theme]);
 	
 	// DOM Elements
 	let map = null;
@@ -51,74 +50,43 @@
 
 	// Functions etc
 	function navTo(code) {
-		if (code && code != place.areacd) {
-			goto(`${base}/${code}/`, {noScroll: true});
-		}
-	}
-
-	// Postcode multi-select
-	let placeholder = "Type a place name or postcode";
-	let filterText = "";
-	async function getPostcodes(filterText) {
-		if (filterText.length > 2 && /\d/.test(filterText)) {
-			let res = await fetch(`https://api.postcodes.io/postcodes/${filterText}/autocomplete`);
-			let json = await res.json();
-			return json.result.map(d => ({areacd: d, areanm: d, group: "", postcode: true}));
-		} else if (filterText.length > 2) {
-			return places.filter(p => p.areanm.toLowerCase().slice(0, filterText.length) == filterText.toLowerCase());
-		}
-		return [];
-	}
-	async function doSelect(e) {
-		if (e.detail.postcode) {
-			let res = await fetch(`https://api.postcodes.io/postcodes/${e.detail.areacd}`);
-			let json = await res.json();
-			if (json.result) {
-				let place = places.find(p => p.areacd == json.result.codes.admin_district);
-				if (place) {
-					if (window.dataLayer) window.dataLayer.push({event: "postcodeSelect", name: place.areanm, code: place.areacd});
-					placeholder = "Type a place name or postcode";
-					navTo(place.areacd);
-				} else {
-					placeholder = "Postcode must be in England or Wales";
-				}
-			}
-		} else {
-			if (window.dataLayer) window.dataLayer.push({event: "nameSelect", name: e.detail.areanm, code: e.detail.areacd});
-			navTo(e.detail.areacd);
-			placeholder = "Type a place name or postcode";
+		if (code !== place?.areacd) {
+			goto(`${base}/${makePath(code)}`, {noScroll: true});
 		}
 	}
 	function mapSelect(e) {
-		if (window.dataLayer && e.detail.feature) window.dataLayer.push({event: "nameSelect", name: e.detail.feature.properties.areanm, code: e.detail.id});
 		navTo(e.detail.id);
 	}
 </script>
 
 <svelte:head>
-	<title>{place ? `${getName(place)} - ONS Area hub` : 'ONS Area hub'}</title>
+  {#if place}
+	<title>{`${getName(place)} - ONS Area hub`}</title>
 	<link rel="icon" href="{assets}/favicon.ico" />
-	<meta property="og:title" content="{place ? `${getName(place)} - ONS Area hub` : 'ONS Area hub'}" />
+	<meta property="og:title" content="{`${getName(place)} - ONS Area hub`}" />
 	<meta property="og:type" content="website" />
-	<meta property="og:url" content="{place ? `${assets}/${place.areacd}/` : `${assets}/`}" />
+	<meta property="og:url" content="{`${assets}/${place.areacd}/`}" />
 	<meta property="og:image" content="{assets}/img/og.png" />
 	<meta property="og:image:type" content="image/png" />
-	<meta name="description" content="{place ? `Explore content for ${getName(place, 'the')} from the ONS` : `Explore content for England and Wales from the ONS`}">
-	<meta property="og:description" content="{place ? `Explore content for ${getName(place, 'the')} from the ONS` : `Explore content for England and Wales from the ONS`}" />
+	<meta name="description" content="{`Explore content for ${getName(place, 'the')} from the ONS`}">
+	<meta property="og:description" content="{`Explore content for ${getName(place, 'the')} from the ONS`}" />
+  {/if}
 </svelte:head>
 
 {#if place}
 <Titleblock
 	background="none"
-	breadcrumb="{[{label: 'Area hub', url: `${base}/`, refresh: true}, ...[...place.parents].reverse().map(p => ({label: getName(p), url: `${base}/${p.areacd}/`})), {label: getName(place)}]}">
+	breadcrumb="{[{label: 'Home', url: '/', refresh: true}, ...[...place.parents].reverse().map(p => ({label: getName(p), url: `${base}/${makePath(p.areacd)}`})), {label: getName(place)}]}">
 	<Headline>{getName(place)}</Headline>
-	<Select items={places} mode="search" idKey="areacd" labelKey="areanm" groupKey="group" {placeholder} bind:filterText loadOptions={getPostcodes} autoClear on:select={doSelect}/>
+	<Select items={places} mode="search" idKey="areacd" labelKey="areanm" groupKey="group" autoClear on:select={(e) => navTo(e.detail)}/>
 	<p class="subtitle">
 		{#if place.areacd != "K04000001"}
 		<strong>{capitalise(getName(place, "the"))}</strong> <small>({place.areacd})</small> is {addArticle(place.typenm)} {getName(place.parents[0], "in")}.
 		{/if}
 	</p>
-  <p style:margin-top="-18px"><Icon type="touch"/> <a href="#interactive">View interactive content</a></p>
+  <p style:margin-top="-18px">
+    <Icon type="touch"/> <a href="#interactive">View interactive content</a>
+  </p>
 </Titleblock>
 
 <Content>
@@ -175,7 +143,7 @@
 			{#each [...place.parents].reverse() as parent, i}
 			<span class="parent" style:margin-left="{i == 0 ? 0 : `${(i - 1) * 20}px`}">
 				{#if i != 0}<Icon type="subdir"/>{/if}
-				<a href="{base}/{parent.areacd}/" data-sveltekit-noscroll>{getName(parent)}</a>
+				<a href="{base}/{makePath(parent.areacd)}" data-sveltekit-noscroll>{getName(parent)}</a>
 			</span>
 			{/each}
 			{:else}
@@ -194,7 +162,7 @@
 			<span class="type-label">{capitalise(childType.plural)}</span><br/>
 			{/if}
 			{#each place.children.filter(c => childType.codes.includes(c.areacd.slice(0, 3))) as child, i}
-			<a href="{base}/{child.areacd}/" data-sveltekit-noscroll>{getName(child)}</a>{i == place.children.length - 1 ? '' : ', '} 
+			<a href="{base}/{makePath(child.areacd)}" data-sveltekit-noscroll>{getName(child)}</a>{i == place.children.length - 1 ? '' : ', '} 
 			{/each}
 			{:else}
 			<span class="muted">No areas available within {getName(place)}</span>
@@ -214,120 +182,4 @@
     {/each}
 	</Cards>
 </Content>
-{:else if !place}
-<Content>
-	<a class="redirect" href="{base}/K04000001/">Loading England and Wales...</a>
-</Content>
 {/if}
-
-<style>
-  :global(html) {
-    scroll-behavior: smooth;
-  }
-	:global(.tile) {
-		color: black;
-		font-size: 1rem;
-	}
-	:global(p) {
-		font-size: 1rem;
-	}
-	:global(.mapboxgl-ctrl-icon, .maplibregl-ctrl-icon) {
-		visibility: visible !important;
-	}
-	a {
-		color: #206095;
-		text-decoration: underline;
-	}
-	a:hover {
-		color: rgb(0, 60, 87);
-	}
-	a.redirect {
-		display: block;
-		margin-top: 20px !important;
-	}
-	.subtitle {
-		margin: 8px 0;
-	}
-	.parent {
-		display: block;
-	}
-	.muted {
-		color: grey;
-	}
-	select {
-		appearance: none;
-		background: rgb(144, 32, 130) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8"><path d="M1.5.3L6 5.4 10.5.3c.2-.2.4-.2.6 0l.7.7c.1.2.1.4 0 .5L6.3 7.7c-.2.2-.4.2-.6 0L.2 1.6C.1 1.4.1 1.2.2 1L.9.3c.2-.1.4-.1.6 0z" fill="white"/></svg>') padding-box no-repeat;
-		background-position: calc(100% - 10px) 50%;
-		max-width: 100%;
-		background-size: 16px;
-		color: white;
-		font-weight: bold;
-		border: none;
-		border-radius: 3px;
-		padding: 4px 33px 4px 6px;
-		margin: 0;
-		font-size: 1rem;
-	}
-	select:focus {
-		outline: 4px solid orange;
-	}
-	.type-label {
-		display: inline-block;
-		background-color: rgb(144, 32, 130);
-		color: white;
-		font-weight: bold;
-		padding: 1px 10px;
-		margin: 0;
-		border-radius: 3px;
-		font-size: 1rem;
-	}
-	.num-big {
-		display: flex;
-		flex-direction: row;
-		justify-content: space-between;
-		width: 100%;
-		font-size: 3rem;
-		font-weight: bold;
-		line-height: 1.2;
-	}
-	.num-suffix {
-		display: block;
-		max-width: 100%;
-		line-height: 1.1;
-	}
-	.num-desc {
-		display: block;
-		margin-top: 18px;
-		color: #666;
-		line-height: 1.6;
-	}
-	.btn-group {
-		display: inline-flex;
-		flex-direction: column;
-		overflow: hidden;
-		margin: 4px -5px 4px 0;
-	}
-	.btn-chevron {
-		background: none;
-		border: none;
-		font-size: 20px;
-		margin: 0;
-		padding: 0;
-		color: #206095;
-	}
-	.btn-chevron:disabled {
-		color: #bbb;
-	}
-	.btn-chevron:hover {
-		color: black;
-	}
-	/* Safari */
-	@-webkit-keyframes spin {
-		0% { -webkit-transform: rotate(0deg); }
-		100% { -webkit-transform: rotate(360deg); }
-	}
-	@keyframes spin {
-		0% { transform: rotate(0deg); }
-		100% { transform: rotate(360deg); }
-	}
-</style>

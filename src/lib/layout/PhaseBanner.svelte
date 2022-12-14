@@ -1,5 +1,5 @@
 <script>
-    export let phase = "Prototype";
+    export let phase = "Alpha";
     export let url = "//www.ons.gov.uk/feedback";
 </script>
 

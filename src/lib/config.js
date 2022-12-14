@@ -1,21 +1,4 @@
-// CORE CONFIG
-export const themes = {
-  'light': {
-		'name': 'light',
-    'text': '#222',
-    'muted': '#777',
-    'pale': '#f0f0f0',
-    'background': '#fff'
-  },
-  'dark': {
-		'name': 'dark',
-    'text': '#fff',
-    'muted': '#bbb',
-    'pale': '#333',
-    'background': '#222'
-  }
-};
-
+export const assets = "https://onsvisual.github.io/geo-hub";
 export const cdnUrl = "https://cdn.ons.gov.uk/maptiles/ap-geos/v1";
 
 export const geoNames = {

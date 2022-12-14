@@ -1,5 +1,6 @@
 import { csvParse, autoType } from "d3-dsv";
 import { feature } from "topojson-client";
+import { cdnUrl, geoCodesLookup, geoTypesLookup, geoNames } from "$lib/config";
 
 export async function getData(url, fetch = window.fetch) {
   let res = await fetch(url);
@@ -12,6 +13,40 @@ export async function getData(url, fetch = window.fetch) {
     });
   });
   return data;
+}
+
+export async function getPlace(code, fetch = window.fetch) {
+  try {
+		let typeCode = code.slice(0, 3);
+		let res = await fetch(`${cdnUrl}/${typeCode}/${code}.json`);
+		let json = await res.json();
+
+		if (geoNames[typeCode]) json.properties.typenm = geoNames[typeCode].label; 
+		let childCodes = json.properties.children[0] ?
+				Array.from(new Set(json.properties.children.map(d => d.areacd.slice(0, 3)))) : null;
+		json.properties.childTypes = childCodes ? Array.from(new Set(childCodes.map(c => geoCodesLookup[c]))) : [];
+		if (typeCode === "E12") {
+			json.properties.childTypes = json.properties.childTypes.filter(c => c.key !== "lad");
+			if (code === "E12000007") {
+				json.properties.childTypes = [
+					{
+						key: "lad",
+						codes: ["E09"],
+						label: "borough",
+						plural: "boroughs"
+					},
+					...json.properties.childTypes
+				];
+			}
+		} 
+    return {
+      place: json.properties,
+      type: geoCodesLookup[typeCode]
+    };
+	}
+  catch {
+    return {place: null, type: null};
+  }
 }
 
 export function getName(props, context = null) {
@@ -31,7 +66,9 @@ export function getName(props, context = null) {
 
 export function getParent(geocodes, parents) {
   for (const parent of parents) {
-    if (geocodes.includes(parent.areacd.slice(0, 3))) {
+    let typecd = parent.areacd.slice(0, 3);
+    if (geocodes.includes(typecd)) {
+      parent.groupcd = geoCodesLookup[typecd].key;
       return [parent];
     };
   }
@@ -61,6 +98,19 @@ export function addArticle(str) {
     return "an " + str;
   } else {
     return "a " + str;
+  }
+}
+
+export function makePath(code) {
+  if ([
+    "K04", "E92", "W92",
+    "E10", "E11", "E12",
+    "E06", "E07", "E08", "E09", "W06",
+    "E14", "W07"
+  ].includes(code.slice(0, 3))) {
+    return code + "/";
+  } else {
+    return "areas/?code=" + code;
   }
 }
 

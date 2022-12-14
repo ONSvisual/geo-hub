@@ -6,27 +6,91 @@
 p {
   font-size: 1rem;
 }
-.mapboxgl-ctrl-icon {
+.mapboxgl-ctrl-icon, .maplibregl-ctrl-icon {
   visibility: visible !important;
 }
-.num-big {
-  display: block;
-  font-size: 3rem;
-  font-weight: bold;
-  line-height: 1.2;
+.tile {
+  color: black;
+  font-size: 1rem;
 }
-.num-suffix {
+a {
+  color: #206095;
+  text-decoration: underline;
+}
+a:hover {
+  color: rgb(0, 60, 87);
+}
+.subtitle {
+  margin: 8px 0;
+}
+.parent {
   display: block;
+}
+.muted {
+  color: grey;
+}
+select {
+  appearance: none;
+  background: rgb(144, 32, 130) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8"><path d="M1.5.3L6 5.4 10.5.3c.2-.2.4-.2.6 0l.7.7c.1.2.1.4 0 .5L6.3 7.7c-.2.2-.4.2-.6 0L.2 1.6C.1 1.4.1 1.2.2 1L.9.3c.2-.1.4-.1.6 0z" fill="white"/></svg>') padding-box no-repeat;
+  background-position: calc(100% - 10px) 50%;
   max-width: 100%;
-  margin-left: 2px;
-}
-.num-desc {
-  display: block;
-  margin-top: 10px;
-  color: #666;
-}
-.num-desc > mark {
-  background-color: lightgrey;
+  background-size: 16px;
+  color: white;
   font-weight: bold;
-  padding: 0 3px;
+  border: none;
+  border-radius: 3px;
+  padding: 4px 33px 4px 6px;
+  margin: 0;
+  font-size: 1rem;
+}
+select:focus {
+  outline: 4px solid orange;
+}
+.type-label {
+  display: inline-block;
+  background-color: rgb(144, 32, 130);
+  color: white;
+  font-weight: bold;
+  padding: 1px 10px;
+  margin: 0;
+  border-radius: 3px;
+  font-size: 1rem;
+}
+.lbl-search {
+  display: block;
+  font-size: 1rem;
+  margin: 30px 0 5px;
+}
+.heading-bold {
+  display: block;
+  border-top: 1px solid black;
+  margin: 50px 0 10px;
+  padding: 20px 0 0;
+  font-size: 1.4em;
+  font-weight: bold;
+}
+ul.ons-list {
+  list-style: none;
+  padding-left: 0;
+}
+.ons-list > li {
+  position: relative;
+  font-size: 1rem;
+  margin: 0 0 9px 25px !important;
+  display: list-item;
+  text-align: -webkit-match-parent;
+  padding: 0 !important;
+}
+.ons-list > li:before {
+  border-top: 1px solid #222;
+  content: "";
+  left: 0;
+  margin-left: -25px;
+  position: absolute;
+  top: 14px;
+  width: 15px;
+}
+.inline-icon {
+  font-size: 0.9em;
+  margin-left: 5px;
 }

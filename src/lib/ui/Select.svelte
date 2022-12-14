@@ -9,7 +9,7 @@
 	export let container = undefined;
 	export let mode = "default";
 	export let items;
-	export let placeholder = "Select one...";
+	export let placeholder = "Type a place name or postcode";
 	export let value = null;
 	export let filterText = "";
 	export let isSearchable = true;
@@ -19,7 +19,6 @@
 	export let labelKey = "label";
 	export let groupKey = null;
 	export let groupItems = false;
-	export let loadOptions = undefined;
 	export let fontSize = "1em";
 	export let height = 42;
 	export let isMulti = false;
@@ -27,6 +26,35 @@
 	export let colors = ["#206095", "#a8bd3a", "#871a5b", "#27a0cc"];
 	export let darkMode = false;
 	export let borderColor = darkMode ? "white" : "#206095";
+
+	export async function loadOptions(filterText) {
+		if (filterText.length > 2 && /\d/.test(filterText)) {
+			let res = await fetch(`https://api.postcodes.io/postcodes/${filterText}/autocomplete`);
+			let json = await res.json();
+			return json.result.map(d => ({areacd: d, areanm: d, group: "", postcode: true}));
+		} else if (filterText.length > 2) {
+			return items.filter(p => p.areanm.toLowerCase().slice(0, filterText.length) == filterText.toLowerCase());
+		}
+		return [];
+	}
+	async function doSelect(e) {
+		if (e.detail.postcode) {
+			let res = await fetch(`https://api.postcodes.io/postcodes/${e.detail.areacd}`);
+			let json = await res.json();
+			if (json.result) {
+				let place = items.find(p => p.areacd == json.result.codes.admin_district);
+				if (place) {
+					placeholder = "Type a place name or postcode";
+          dispatch("select", place.areacd);
+				} else {
+					placeholder = "Postcode must be in England or Wales";
+				}
+			}
+		} else {
+			dispatch("select", e.detail[idKey]);
+			placeholder = "Type a place name or postcode";
+		}
+	}
 	
 	const getOptionLabel = groupKey && !groupItems ? (option) => `${option[labelKey]} <span class="group">${option[groupKey]}</span>` : (option) => option[labelKey];
 	export let getSelectionLabel = (option) => {
@@ -54,8 +82,8 @@
 	
 	const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-	async function doSelect(e) {
-		dispatch("select", e.detail);
+	async function handleSelect(e) {
+		doSelect(e);
 		if (autoClear) {
 			handleClear();
 		} else if (isClearable) {
@@ -89,7 +117,7 @@
 		{containerStyles}
 		optionIdentifier={idKey}
 		bind:isFocused bind:value bind:listOpen bind:filterText bind:isWaiting bind:handleClear
-		on:select={doSelect} on:clear on:loaded on:error
+		on:select={handleSelect} on:clear on:loaded on:error
 		showIndicator isClearable={!isClearable ? false : !isMulti}/>
 </div>
 

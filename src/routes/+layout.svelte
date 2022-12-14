@@ -1,9 +1,6 @@
 <script>
   import "../app.css";
   import { page } from '$app/stores';
-  import { base } from "$app/paths";
-	import { setContext } from "svelte";
-	import { themes } from "$lib/config";
   import PhaseBanner from "$lib/layout/PhaseBanner.svelte";
 	import ONSFooter from "$lib/layout/ONSFooter.svelte";
   import AnalyticsBanner from "$lib/layout/AnalyticsBanner.svelte";
@@ -15,25 +12,18 @@
   let lang = $page.url.hostname.split(".")[0] == "cy" ? "cy" : "en";
   let baseurl = lang == "cy" ? "//cy.ons.gov.uk" : "//www.ons.gov.uk";
 
-  // STYLE CONFIG
-  // Set theme globally (options are 'light' or 'dark', defined in config.js)
-  let theme = "light";
-  setContext("theme", themes[theme]);
-
   // GOOGLE ANALYTICS
   // Settings for page analytics. Values must be shared with <AnalyticsBanner> component
   const analyticsId = "GTM-MBCBVQS";
   const analyticsProps = {
-    "contentTitle": "Census area profiles - prototype",
-    "releaseDate": "20220624",
+    "contentTitle": "Census area profiles",
+    "releaseDate": "20230112",
     "contentType": "exploratory"
   };
-
-  const survey_url = "https://www.surveymonkey.co.uk/r/N3FKCL9";
 </script>
 
 <AnalyticsBanner {analyticsId} {analyticsProps}/>
-<PhaseBanner url={survey_url}/>
+<PhaseBanner/>
 <ONSHeader/>
 <CensusBanner/>
 
