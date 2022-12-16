@@ -57,7 +57,7 @@
   {/if}
 
   <p style:margin-top="20px">
-    You can also possible navigate through the hierarchy of all the available geographic areas, including local authorities, wards, parishes and parliamentary constituencies. Select a country or region below to start navigating.
+    You can also navigate through a hierarchy of all the available geographic areas, including local authorities, wards, parishes and parliamentary constituencies. Select a country or region below to start navigating.
   </p>
 
   <ul class="ons-list">
