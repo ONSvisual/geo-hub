@@ -14,15 +14,17 @@
 	import Card from "$lib/layout/partial/Card.svelte";
 	import CardFeature from "$lib/layout/partial/CardFeature.svelte";
 	import Select from "$lib/ui/Select.svelte";
+  import AreaList from "$lib/ui/AreaList.svelte";
 	import Icon from "$lib/ui/Icon.svelte";
 	import { Map, MapSource, MapLayer } from "@onsvisual/svelte-maps";
 	import MapTooltip from "@onsvisual/svelte-maps/src/MapTooltip.svelte";
 
 	export let data;
 	let { places, lookup, links } = data;
-	let place, type, childType;
+	let place, type, childType, postcode;
 
 	async function pageLoad() {
+    postcode = null;
     let code = $page.url.searchParams.get("code");
 		if (!data.place && code) {
       let newData = await getPlace(code);
@@ -49,13 +51,17 @@
 	let hovered = null;
 
 	// Functions etc
-	function navTo(code) {
-		if (code !== place?.areacd) {
-			goto(`${base}/${makePath(code)}`, {noScroll: true});
-		}
+	function navTo(e, options = null) {
+    if (e.detail.type ==="postcode") {
+      postcode = e.detail;
+    } else {
+      postcode = null;
+      goto(`${base}/${makePath(e.detail.areacd)}`, options);
+    }
 	}
 	function mapSelect(e) {
-		navTo(e.detail.id);
+    e.detail.areacd = e.detail.id;
+		navTo(e, {noScroll: true});
 	}
 </script>
 
@@ -78,7 +84,10 @@
 	background="none"
 	breadcrumb="{[{label: 'Home', url: '/', refresh: true}, ...[...place.parents].reverse().map(p => ({label: getName(p), url: `${base}/${makePath(p.areacd)}`})), {label: getName(place)}]}">
 	<Headline>{getName(place)}</Headline>
-	<Select items={places} mode="search" idKey="areacd" labelKey="areanm" groupKey="group" autoClear on:select={(e) => navTo(e.detail)}/>
+	<Select items={places} mode="search" idKey="areacd" labelKey="areanm" groupKey="group" autoClear on:select={navTo}/>
+  {#if postcode}
+  <AreaList {postcode} on:clear={() => postcode = null}/>
+  {/if}
 	<p class="subtitle">
 		{#if place.areacd != "K04000001"}
 		<strong>{capitalise(getName(place, "the"))}</strong> <small>({place.areacd})</small> is {addArticle(place.typenm)} {getName(place.parents[0], "in")}.

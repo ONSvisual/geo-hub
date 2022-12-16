@@ -1,5 +1,6 @@
 <script>
 	import { onMount, createEventDispatcher } from "svelte";
+  import { geoTypes, geoReverseLookup } from "$lib/config";
 	import Select from "svelte-select";
 	const searchIcon = `<svg viewBox="0 0 20 20" fill-rule="evenodd"><path d="M0,8a8,8,0,1,0,16,0a8,8,0,1,0,-16,0ZM3,8a5,5,0,1,0,10,0a5,5,0,1,0,-10,0Z"/><path d="M18,20L20,18L14,12L12,14Z"/></svg>`;
 	const chevronIcon = `<svg viewBox="0 0 20 20"><path d="M1,6L19,6L10,15Z"/></svg>`;
@@ -42,16 +43,24 @@
 			let res = await fetch(`https://api.postcodes.io/postcodes/${e.detail.areacd}`);
 			let json = await res.json();
 			if (json.result) {
+        let places = [];
+        geoTypes.filter(g => g.pcio).forEach(g => {
+          let name = json.result[g.pcio];
+          if (name && !name.includes('unparished')) {
+            let code = json.result.codes[g.pcio] ? json.result.codes[g.pcio] : geoReverseLookup[name];
+            places.push({areacd: code, areanm: name, typenm: g.label.split("/")[0]});
+          }
+        });
 				let place = items.find(p => p.areacd == json.result.codes.admin_district);
 				if (place) {
 					placeholder = "Type a place name or postcode";
-          dispatch("select", place.areacd);
+          dispatch("select", {type: "postcode", areacd: place.areacd, postcd: json.result.postcode, places});
 				} else {
 					placeholder = "Postcode must be in England or Wales";
 				}
 			}
 		} else {
-			dispatch("select", e.detail[idKey]);
+			dispatch("select", {type: "place", areacd: e.detail[idKey]});
 			placeholder = "Type a place name or postcode";
 		}
 	}

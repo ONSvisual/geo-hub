@@ -23,6 +23,7 @@ export const geoTypes = [
 	{
     key: "ctry",
     codes: ["E92", "W92"],
+    pcio: "country",
     label: "country",
     plural: "countries",
     source: {
@@ -33,6 +34,7 @@ export const geoTypes = [
 	{
     key: "rgn",
     codes: ["E12"],
+    pcio: "region",
     label: "region",
     plural: "regions",
     source: {
@@ -43,6 +45,7 @@ export const geoTypes = [
 	{
     key: "cty",
     codes: ["E10", "E11", "E06", "W06", "E09"],
+    pcio: "admin_county",
     label: "county/unitary authority",
     plural: "counties/unitary authorities",
     source: {
@@ -55,6 +58,7 @@ export const geoTypes = [
 	{
     key: "lad",
     codes: ["E06", "E07", "E08", "E09", "W06"],
+    pcio: "admin_district",
     label: "district",
     plural: "districts",
     source: {
@@ -67,6 +71,7 @@ export const geoTypes = [
   {
     key: "wpc",
     codes: ["E14", "W07"],
+    pcio: "parliamentary_constituency",
     label: "parliamentary constituency",
     plural: "parliamentary constituencies",
     source: {
@@ -79,6 +84,7 @@ export const geoTypes = [
 	{
     key: "wd",
     codes: ["E05", "W05"],
+    pcio: "admin_ward",
     label: "ward",
     plural: "wards",
     source: {
@@ -91,6 +97,7 @@ export const geoTypes = [
 	{
     key: "par",
     codes: ["E04", "W04"],
+    pcio: "parish",
     label: "parish",
     plural: "parishes",
     source: {
@@ -103,6 +110,7 @@ export const geoTypes = [
 	{
     key: "msoa",
     codes: ["E02", "W02"],
+    pcio: "msoa",
     label: "MSOA",
     plural: "MSOAs",
     source: {
@@ -115,6 +123,7 @@ export const geoTypes = [
 	{
     key: "lsoa",
     codes: ["E01", "W01"],
+    pcio: "lsoa",
     label: "LSOA",
     plural: "LSOAs",
     source: {
@@ -149,3 +158,17 @@ export const geoTypesLookup = (() => {
 	geoTypes.forEach(g => lookup[g.key] = g);
 	return lookup;
 })();
+
+export const geoReverseLookup = {
+  "England": "E92000001",
+  "Wales": "W92000004",
+  "North East": "E12000001",
+  "North West": "E12000002",
+  "Yorkshire and The Humber": "E12000003",
+  "East Midlands": "E12000004",
+  "West Midlands": "E12000005",
+  "East of England": "E12000006",
+  "London": "E12000007",
+  "South East": "E12000008",
+  "South West": "E12000009",
+};
