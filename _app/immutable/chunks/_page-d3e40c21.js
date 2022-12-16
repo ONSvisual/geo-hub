@@ -1,0 +1,1 @@
+import{i}from"./utils-bb5bbfc5.js";async function u({fetch:l,params:t,parent:o}){const e=await o();let a=e.places,c=e.lookup,p=e.links,n=t.code.replaceAll("/",""),{place:r,type:s}=await i(n,l);return{places:a,lookup:c,place:r,type:s,links:p}}const _=Object.freeze(Object.defineProperty({__proto__:null,load:u},Symbol.toStringTag,{value:"Module"}));export{_,u as l};
