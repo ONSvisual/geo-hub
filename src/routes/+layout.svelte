@@ -16,14 +16,14 @@
   // Settings for page analytics. Values must be shared with <AnalyticsBanner> component
   const analyticsId = "GTM-MBCBVQS";
   const analyticsProps = {
-    "contentTitle": "Census area profiles",
-    "releaseDate": "20230112",
+    "contentTitle": "Area hub",
+    "releaseDate": "20230116",
     "contentType": "exploratory"
   };
 </script>
 
 <AnalyticsBanner {analyticsId} {analyticsProps}/>
-<PhaseBanner/>
+<PhaseBanner url="https://www.surveymonkey.co.uk/r/2SGF6X2"/>
 <ONSHeader/>
 <CensusBanner/>
 

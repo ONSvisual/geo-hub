@@ -1,5 +1,6 @@
 <script>
   import { getContext } from "svelte";
+  import Icon from "$lib/ui/Icon.svelte";
 
   export let colspan = 1; // 1, 2 or 3
   export let rowspan = 1;
@@ -16,11 +17,16 @@
     <img class="tile__highlighted-content-image" src="{image}" alt="">
   </div>
   <h2 class="margin-top--0 margin-bottom--0">
-    <a class="margin-left--0 tile__link tile__link--highlighted-content-title font-size--24" href="{url}" data-gtm-group="in-focus" data-gtm-group-position="1">
+    <a class="margin-left--0 tile__link tile__link--highlighted-content-title font-size--24" href="{url}">
       {title}
     </a>
+    {#if description.toLowerCase().includes("external")}
+    <span class="inline-icon"><Icon type="launch"/></span>
+    {/if}
   </h2>
-  <p class="tile__text-description margin-top--0 margin-bottom--0">{description}</p>
+  <p class="tile__text-description margin-top--0 margin-bottom--0">
+    {description}
+  </p>
 </article>
 
 <style>

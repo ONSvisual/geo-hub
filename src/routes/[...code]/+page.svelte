@@ -67,9 +67,9 @@
 
 <svelte:head>
   {#if place}
-	<title>{`${getName(place)} - ONS Area hub`}</title>
+	<title>{`${getName(place)} - ONS`}</title>
 	<link rel="icon" href="{assets}/favicon.ico" />
-	<meta property="og:title" content="{`${getName(place)} - ONS Area hub`}" />
+	<meta property="og:title" content="{`${getName(place)} - ONS`}" />
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="{`${assets}/${place.areacd}/`}" />
 	<meta property="og:image" content="{assets}/img/og.png" />
