@@ -51,7 +51,7 @@
 	let hovered = null;
 
 	// Functions etc
-	function navTo(e, options = null) {
+	function navTo(e, options = {}) {
     if (e.detail.type ==="postcode") {
       postcode = e.detail;
     } else {

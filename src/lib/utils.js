@@ -6,7 +6,7 @@ export async function getData(url, fetch = window.fetch) {
   let res = await fetch(url);
   let str = await res.text();
   let data = csvParse(str, autoType);
-  let cols = data.columns.filter(c => data[0][c].includes("|"));
+  let cols = data.columns.filter(c => data[0][c] && data[0][c].includes("|"));
   data.forEach((d, i) => {
     cols.forEach(col => {
       d[col] = d[col].split("|");

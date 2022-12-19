@@ -13,9 +13,9 @@ export async function load({ fetch }) {
 	places.forEach(d => lookup[d.areacd] = d);
 	places.forEach(d => {
 		let type = d.areacd.slice(0, 3);
-		d.group = type=== "K04" ? "" :
-		d.parent ? `${capitalise(getTypeLabel(type))} in ${lookup[d.parent].areanm}` :
-		capitalise(getTypeLabel(type));
+		d.group = type === "K04" ? "" :
+      d.parent ? `${capitalise(getTypeLabel(type))} in ${lookup[d.parent].areanm}` :
+      capitalise(getTypeLabel(type));
 	});
   let links = await getData(`${base}/data/csv/links.csv`, fetch);
   links.forEach((link, i) => {
