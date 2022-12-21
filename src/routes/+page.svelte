@@ -57,7 +57,7 @@
     <strong>Search by area name or postcode</strong><br/>
     For example, “London” or “EC1M 3AB”
   </label>
-  <Select items={places} mode="search" idKey="areacd" labelKey="areanm" groupKey="group" autoClear on:select={navTo}/>
+  <Select id="search" items={places} mode="search" idKey="areacd" labelKey="areanm" groupKey="group" autoClear on:select={navTo}/>
 
   {#if postcode}
   <AreaList {postcode} on:clear={() => postcode = null}/>

@@ -59,7 +59,7 @@ select:focus {
 .lbl-search {
   display: block;
   font-size: 1rem;
-  margin: 20px 0 5px;
+  margin: 12px 0 5px;
 }
 .heading-bold {
   display: block;
@@ -132,4 +132,9 @@ ul.ons-list {
 }
 .btn-link:hover {
   color: #003c57;
+}
+hr.ons-divider {
+  border: none;
+  border-top: 1px solid rgb(128, 128, 128);
+  margin: 20px 0 0;
 }

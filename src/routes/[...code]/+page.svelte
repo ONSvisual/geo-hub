@@ -9,7 +9,9 @@
 
 	import Titleblock from "$lib/layout/Titleblock.svelte";
 	import Headline from "$lib/layout/partial/Headline.svelte";
+	import Subhead from "$lib/layout/partial/Subhead.svelte";
 	import Content from "$lib/layout/Content.svelte";
+	import Article from "$lib/layout/Article.svelte";
 	// import Section from "$lib/layout/Section.svelte";
 	import Cards from "$lib/layout/Cards.svelte";
 	import Card from "$lib/layout/partial/Card.svelte";
@@ -82,24 +84,32 @@
 
 {#if place}
 <Titleblock
-	background="none"
 	breadcrumb="{[{label: 'Home', url: '/', refresh: true}, ...[...place.parents].reverse().map(p => ({label: getName(p), url: `${base}/${makePath(p.areacd)}`})), {label: getName(place)}]}">
 	<Headline>{getName(place)}</Headline>
-	<Select items={places} mode="search" idKey="areacd" labelKey="areanm" groupKey="group" autoClear on:select={navTo}/>
-  {#if postcode}
-  <AreaList {postcode} on:clear={() => postcode = null}/>
-  {/if}
-	<p class="subtitle">
+  <Subhead>Facts and figures about people living {getName(place, "in")}</Subhead>
+</Titleblock>
+
+<Content>
+  <p class="subtitle">
 		{#if place.areacd != "K04000001"}
 		<strong>{capitalise(getName(place, "the"))}</strong> ({place.areacd}) is {addArticle(place.typenm)} <a href="{base}/{place.parents[0].areacd}/"  data-sveltekit-noscroll>{getName(place.parents[0], "in")}</a>.
 		{/if}
 	</p>
-  <!-- <p style:margin-top="-18px">
-    <Icon type="touch"/> <a href="#interactive">View interactive content</a>
-  </p> -->
-</Titleblock>
+  <label for="search" class="lbl-search">
+    Find another area
+  </label>
+	<Select id="search" items={places} mode="search" idKey="areacd" labelKey="areanm" groupKey="group" autoClear on:select={navTo}/>
+  {#if postcode}
+  <AreaList {postcode} on:clear={() => postcode = null}/>
+  {/if}
+  <hr class="ons-divider"/>
 
-<Content>
+	<Cards title="Facts and figures for {getName(place, "the")}" id="interactive">
+    {#each filterLinks(links, place) as link}
+    <CardFeature title={link.title} url="{parseTemplate(link.url, link.place)}" description="{parseTemplate(link.description, link.place)}" image="{link.image}"/>
+    {/each}
+	</Cards>
+  
 	<Cards title="Areas related to {getName(place, "the")}" id="related">
 		<Card colspan={2} rowspan={2} blank>
 			<div style:height="450px">
@@ -178,12 +188,6 @@
 			<span class="muted">No areas available within {getName(place)}</span>
 			{/if}
 		</Card>
-	</Cards>
-
-	<Cards title="Facts and figures for {getName(place, "the")}" id="interactive">
-    {#each filterLinks(links, place) as link}
-    <CardFeature title={link.title} url="{parseTemplate(link.url, link.place)}" description="{parseTemplate(link.description, link.place)}" image="{link.image}"/>
-    {/each}
 	</Cards>
 
   <!-- <Section>
