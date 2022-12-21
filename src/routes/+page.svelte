@@ -2,11 +2,11 @@
 	import { goto } from "$app/navigation";
 	import { base } from "$app/paths";
 	import { assets } from "$lib/config";
-	import { getName, makePath, capitalise } from "$lib/utils";
+	import { makePath } from "$lib/utils";
 
 	import Titleblock from "$lib/layout/Titleblock.svelte";
 	import Headline from "$lib/layout/partial/Headline.svelte";
-	import Content from "$lib/layout/Content.svelte";
+  import Article from "$lib/layout/Article.svelte";
 	import Select from "$lib/ui/Select.svelte";
   import AreaList from "$lib/ui/AreaList.svelte";
 	import Icon from "$lib/ui/Icon.svelte";
@@ -40,15 +40,22 @@
 
 <Titleblock
 	breadcrumb="{[{label: 'Home', url: '/', refresh: true}, {label: 'Find a geographic area'}]}">
-	<Headline>Find a geographic area</Headline>
+	<Headline>Find facts and figures about areas in England and Wales</Headline>
 	<p class="subtitle">
-		Get facts, figures and interactive content for places in England and Wales.
+		Find an area in England and Wales to get facts and figures on different topics, including population, identity, housing, work, education and health.
 	</p>
 </Titleblock>
-<Content>
+<Article>
+  <p>
+    You can find areas including local authorities, wards, parishes and parliamentary constituencies.
+  </p>
+  <p>
+    You can also navigate through all available areas, starting from <a href="{base}/E92000001/">England</a> or <a href="{base}/W92000004/">Wales</a>.
+  </p>
+
   <label for="search" class="lbl-search">
-    <strong>Search by place name or postcode to find your area</strong><br/>
-    For example, "PO15 5RR" or "Newport West"
+    <strong>Search by area name or postcode</strong><br/>
+    For example, “London” or “EC1M 3AB”
   </label>
   <Select items={places} mode="search" idKey="areacd" labelKey="areanm" groupKey="group" autoClear on:select={navTo}/>
 
@@ -56,33 +63,14 @@
   <AreaList {postcode} on:clear={() => postcode = null}/>
   {/if}
 
-  <p style:margin-top="20px">
-    You can also navigate through a hierarchy of all the available geographic areas, including local authorities, wards, parishes and parliamentary constituencies. Select a country or region below to start navigating.
+  <h2 class="heading-bold">Other countries in the UK</h2>
+
+  <p>
+    Scotland and Northern Ireland have their own agencies who produce official statistics. View facts and figures for areas in:
   </p>
 
   <ul class="ons-list">
-    <li><a href="{base}/K04000001/"><strong>England and Wales</strong></a></li>
-    <ul class="ons-list">
-      <li><a href="{base}/E92000001/"><strong>England</strong></a></li>
-      <ul class="ons-list ons-list-sml">
-        <li><a href="{base}/E12000001/">North East</a></li>
-        <li><a href="{base}/E12000002/">North West</a></li>
-        <li><a href="{base}/E12000003/">Yorkshire and The Humber</a></li>
-        <li><a href="{base}/E12000004/">East Midlands</a></li>
-        <li><a href="{base}/E12000005/">West Midlands</a></li>
-        <li><a href="{base}/E12000006/">East of England</a></li>
-        <li><a href="{base}/E12000007/">London</a></li>
-        <li><a href="{base}/E12000008/">South East</a></li>
-        <li><a href="{base}/E12000009/">South West</a></li>
-      </ul>
-      <li><a href="{base}/W92000004/"><strong>Wales</strong></a></li>
-    </ul>
+    <li><a href="https://statistics.gov.scot/atlas/resource?uri=http://statistics.gov.scot/id/statistical-geography/S92000003/" target="_blank">Scotland</a> <span class="inline-icon"><Icon type="launch"/></span></li>
+    <li><a href="https://www.ninis2.nisra.gov.uk/public/AreaProfile.aspx?Menu=True" target="_blank">Northern Ireland</a> <span class="inline-icon"><Icon type="launch"/></span></li>
   </ul>
-
-  <h2 class="heading-bold">Other parts of the United Kingdom</h2>
-
-  <ul class="ons-list">
-    <li><a href="https://www.nrscotland.gov.uk/">National Records of Scotland</a> <span class="inline-icon"><Icon type="launch"/></span></li>
-    <li><a href="https://www.nisra.gov.uk/">Northern Ireland Statistics and Research Agency</a> <span class="inline-icon"><Icon type="launch"/></span></li>
-  </ul>
-</Content>
+</Article>

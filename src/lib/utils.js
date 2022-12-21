@@ -69,10 +69,24 @@ export function getParent(geocodes, parents) {
     let typecd = parent.areacd.slice(0, 3);
     if (geocodes.includes(typecd)) {
       parent.groupcd = geoCodesLookup[typecd].key;
-      return [parent];
+      return parent;
     };
   }
-  return [];
+  return null;
+}
+
+export function filterLinks(links, place) {
+  let thislinks = [];
+  let parentlinks = [];
+  links.forEach(l => {
+    let parent = getParent(l.geocodes, place.parents);
+    if (l.geocodes.includes(place.typecd)) {
+      thislinks.push({...l, place});
+    } else if (parent) {
+      parentlinks.push({...l, place: getParent(l.geocodes, place.parents)});
+    }
+  });
+  return [...thislinks, ...parentlinks];
 }
 
 export function parseTemplate(template, place) {

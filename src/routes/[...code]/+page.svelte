@@ -4,12 +4,13 @@
 	import { base } from "$app/paths";
 	import { page } from "$app/stores";
 	import { assets, geoTypes } from "$lib/config";
-	import { capitalise, makeGeoJSON, getName, getParent, parseTemplate, addArticle, getPlace, makePath } from "$lib/utils";
+	import { capitalise, makeGeoJSON, getName, filterLinks, parseTemplate, addArticle, getPlace, makePath } from "$lib/utils";
 	import topojson from "$lib/data/ew-ctry-rgn.json";
 
 	import Titleblock from "$lib/layout/Titleblock.svelte";
 	import Headline from "$lib/layout/partial/Headline.svelte";
 	import Content from "$lib/layout/Content.svelte";
+	// import Section from "$lib/layout/Section.svelte";
 	import Cards from "$lib/layout/Cards.svelte";
 	import Card from "$lib/layout/partial/Card.svelte";
 	import CardFeature from "$lib/layout/partial/CardFeature.svelte";
@@ -67,7 +68,7 @@
 
 <svelte:head>
   {#if place}
-	<title>{`${getName(place)} - ONS`}</title>
+	<title>{`${getName(place)} (${place.areacd}) - ONS`}</title>
 	<link rel="icon" href="{assets}/favicon.ico" />
 	<meta property="og:title" content="{`${getName(place)} - ONS`}" />
 	<meta property="og:type" content="website" />
@@ -90,16 +91,16 @@
   {/if}
 	<p class="subtitle">
 		{#if place.areacd != "K04000001"}
-		<strong>{capitalise(getName(place, "the"))}</strong> <small>({place.areacd})</small> is {addArticle(place.typenm)} {getName(place.parents[0], "in")}.
+		<strong>{capitalise(getName(place, "the"))}</strong> ({place.areacd}) is {addArticle(place.typenm)} <a href="{base}/{place.parents[0].areacd}/"  data-sveltekit-noscroll>{getName(place.parents[0], "in")}</a>.
 		{/if}
 	</p>
-  <p style:margin-top="-18px">
+  <!-- <p style:margin-top="-18px">
     <Icon type="touch"/> <a href="#interactive">View interactive content</a>
-  </p>
+  </p> -->
 </Titleblock>
 
 <Content>
-	<Cards title="Explore related areas" id="related">
+	<Cards title="Areas related to {getName(place, "the")}" id="related">
 		<Card colspan={2} rowspan={2} blank>
 			<div style:height="450px">
 				<Map bind:map style="{base}/data/mapstyle.json" location={{bounds: place.bounds}} options={{fitBoundsOptions: {padding: 20}, maxBounds: [-12,47,7,62]}} controls>
@@ -179,16 +180,32 @@
 		</Card>
 	</Cards>
 
-	<Cards title="Interactive content for {getName(place, "the")}" id="interactive">
-    {#each links as link}
-    {#if link.geocodes.includes(place.typecd)}
-    <CardFeature title={link.title} url="{parseTemplate(link.url, place)}" description="{parseTemplate(link.description, place)}" image="{link.image}"/>
-    {:else}
-    {#each getParent(link.geocodes, place.parents) as parent}
-    <CardFeature title={link.title} url="{parseTemplate(link.url, parent)}" description="{parseTemplate(link.description, parent)}" image="{link.image}"/>
-    {/each}
-    {/if}
+	<Cards title="Facts and figures for {getName(place, "the")}" id="interactive">
+    {#each filterLinks(links, place) as link}
+    <CardFeature title={link.title} url="{parseTemplate(link.url, link.place)}" description="{parseTemplate(link.description, link.place)}" image="{link.image}"/>
     {/each}
 	</Cards>
+
+  <!-- <Section>
+    <h2>Get {getName(place)} Census 2021 data</h2>
+    <p>
+      You can get and use data about England in different ways, you can:
+    </p>
+    <ul>
+      {#each links as link}
+      {#if link.geocodes.includes(place.typecd)}
+      <li>
+        <a href="{parseTemplate(link.url, place)}">{parseTemplate(link.description, place)}</a>
+      </li>
+      {:else}
+      {#each getParent(link.geocodes, place.parents) as parent}
+      <li>
+        <a href="{parseTemplate(link.url, parent)}">{parseTemplate(link.description, parent)}</a>
+      </li>
+      {/each}
+      {/if}
+      {/each}
+    </ul>
+  </Section> -->
 </Content>
 {/if}

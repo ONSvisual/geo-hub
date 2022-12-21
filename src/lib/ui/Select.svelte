@@ -10,7 +10,7 @@
 	export let container = undefined;
 	export let mode = "default";
 	export let items;
-	export let placeholder = "Type a place name or postcode";
+	export let placeholder = "Type an area name or postcode";
 	export let value = null;
 	export let filterText = "";
 	export let isSearchable = true;

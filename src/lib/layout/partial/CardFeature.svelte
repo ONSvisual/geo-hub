@@ -17,7 +17,7 @@
     <img class="tile__highlighted-content-image" src="{image}" alt="">
   </div>
   <h2 class="margin-top--0 margin-bottom--0">
-    <a class="margin-left--0 tile__link tile__link--highlighted-content-title font-size--24" href="{url}">
+    <a class="margin-left--0 tile__link tile__link--highlighted-content-title font-size--24" href="{url}" target="{description.toLowerCase().includes("external") ? '_blank' : null}">
       {title}
     </a>
     {#if description.toLowerCase().includes("external")}
