@@ -1,4 +1,5 @@
-const prerender = false;
+export const prerender = process.env.APP_PATH && process.env.APP_PATH.includes('ons');
+export const trailingSlash = 'always';
 
 import { base } from "$app/paths";
 import { cdnUrl, geoCodesLookup, geoNames } from "$lib/config";

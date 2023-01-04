@@ -9,6 +9,8 @@ export async function load({ fetch, params, parent }) {
 	let code = params.code.replaceAll("/", "");
 
 	let { place, type } = await getPlace(code, fetch);
+
+  console.log(code);
 	
   return { places, lookup, place, type, links };
 }

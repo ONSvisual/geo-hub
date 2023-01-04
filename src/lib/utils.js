@@ -120,11 +120,11 @@ export function makePath(code) {
     "K04", "E92", "W92",
     "E10", "E11", "E12",
     "E06", "E07", "E08", "E09", "W06",
-    "E14", "W07"
+    // "E14", "W07"
   ].includes(code.slice(0, 3))) {
     return code + "/";
   } else {
-    return "areas/?code=" + code;
+    return "area/?code=" + code;
   }
 }
 

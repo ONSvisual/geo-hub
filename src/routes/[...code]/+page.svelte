@@ -23,8 +23,9 @@
 	import MapTooltip from "@onsvisual/svelte-maps/src/MapTooltip.svelte";
 
 	export let data;
-	let { places, lookup, links } = data;
-	let place, type, childType, postcode;
+	let { places, place, type, lookup, links } = data;
+	let childType = place?.childTypes[0];
+  let postcode;
 
 	async function pageLoad() {
     postcode = null;
@@ -55,7 +56,7 @@
 
 	// Functions etc
 	function navTo(e, options = {}) {
-    if (e.detail.type ==="postcode") {
+    if (e.detail.type === "postcode") {
       postcode = e.detail;
     } else {
       postcode = null;
@@ -74,7 +75,7 @@
 	<link rel="icon" href="{assets}/favicon.ico" />
 	<meta property="og:title" content="{`${getName(place)} - ONS`}" />
 	<meta property="og:type" content="website" />
-	<meta property="og:url" content="{`${assets}/${place.areacd}/`}" />
+	<meta property="og:url" content="{`${assets}/${makePath(place.areacd)}`}" />
 	<meta property="og:image" content="{assets}/img/og.png" />
 	<meta property="og:image:type" content="image/png" />
 	<meta name="description" content="{`Explore content for ${getName(place, 'the')} from the ONS`}">
@@ -92,7 +93,7 @@
 <Content>
   <p class="subtitle">
 		{#if place.areacd != "K04000001"}
-		<strong>{capitalise(getName(place, "the"))}</strong> ({place.areacd}) is {addArticle(place.typenm)} <a href="{base}/{place.parents[0].areacd}/"  data-sveltekit-noscroll>{getName(place.parents[0], "in")}</a>.
+		<strong>{capitalise(getName(place, "the"))}</strong> ({place.areacd}) is {addArticle(place.typenm)} <a href="{base}/{makePath(place.parents[0].areacd)}"  data-sveltekit-noscroll>{getName(place.parents[0], "in")}</a>.
 		{/if}
 	</p>
   <label for="search" class="lbl-search">
@@ -131,7 +132,7 @@
 								'fill-color': geo.key === type.key ? ['case', ['==', ['feature-state', 'selected'], true], 'rgb(17,140,123)', 'grey'] : 'rgb(17,140,123)',
 								'fill-opacity': ['case', ['==', ['feature-state', 'hovered'], true], 0.3, 0.1]
 							}}
-							visible={geo.key === type.key || geo.key == childType?.key}
+							visible={geo.key === type.key || geo.key === childType?.key}
 							filter={!childType ? null :
 								geo.key === type.key ? ["!=", "areacd", place.areacd] : 
 								["in", "areacd", ...place.children.map(d => d.areacd)]}
@@ -142,9 +143,9 @@
 						<MapLayer
 							id="{geo.key}-line"
 							type="line"
-							paint={{'line-color': geo.key == type.key ? 'grey' : 'rgb(17,140,123)', 'line-width': 1}}
-							visible={geo.key === type.key || geo.key == childType?.key}
-							filter={geo.key == type.key ?
+							paint={{'line-color': geo.key === type.key ? 'grey' : 'rgb(17,140,123)', 'line-width': 1}}
+							visible={geo.key === type.key || geo.key === childType?.key}
+							filter={geo.key === type.key ?
 								["!=", "areacd", place.areacd] : 
 								["in", "areacd", ...place.children.map(d => d.areacd)]}/>
 						<MapLayer
@@ -161,7 +162,7 @@
 		<Card title="Parent areas of {getName(place, "the")}">
 			{#if place.parents[0]}
 			{#each [...place.parents].reverse() as parent, i}
-			<span class="parent" style:margin-left="{i == 0 ? 0 : `${(i - 1) * 20}px`}">
+			<span class="parent" style:margin-left="{i === 0 ? 0 : `${(i - 1) * 20}px`}">
 				{#if i != 0}<Icon type="subdir"/>{/if}
 				<a href="{base}/{makePath(parent.areacd)}" data-sveltekit-noscroll>{getName(parent)}</a>
 			</span>
@@ -181,35 +182,17 @@
 			{:else}
 			<span class="type-label">{capitalise(childType.plural)}</span><br/>
 			{/if}
-			{#each place.children.filter(c => childType.codes.includes(c.areacd.slice(0, 3))) as child, i}
-			<a href="{base}/{makePath(child.areacd)}" data-sveltekit-noscroll>{getName(child)}</a>{i == place.children.length - 1 ? '' : ', '} 
-			{/each}
+      {#each place.childTypes as type}
+      <div class:visuallyhidden={type.code !== childType.code}>
+        {#each place.children.filter(c => type.codes.includes(c.areacd.slice(0, 3))) as child, i}
+        <a href="{base}/{makePath(child.areacd)}" data-sveltekit-noscroll>{getName(child)}</a>{i === place.children.length - 1 ? '' : ', '} 
+        {/each}
+      </div>
+      {/each}
 			{:else}
 			<span class="muted">No areas available within {getName(place)}</span>
 			{/if}
 		</Card>
 	</Cards>
-
-  <!-- <Section>
-    <h2>Get {getName(place)} Census 2021 data</h2>
-    <p>
-      You can get and use data about England in different ways, you can:
-    </p>
-    <ul>
-      {#each links as link}
-      {#if link.geocodes.includes(place.typecd)}
-      <li>
-        <a href="{parseTemplate(link.url, place)}">{parseTemplate(link.description, place)}</a>
-      </li>
-      {:else}
-      {#each getParent(link.geocodes, place.parents) as parent}
-      <li>
-        <a href="{parseTemplate(link.url, parent)}">{parseTemplate(link.description, parent)}</a>
-      </li>
-      {/each}
-      {/if}
-      {/each}
-    </ul>
-  </Section> -->
 </Content>
 {/if}

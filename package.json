@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
+    "build-ons": "set APP_PATH=ons && vite build && node js-fix",
     "preview": "vite preview",
     "deploy": "gh-pages -d build -t true"
   },
@@ -22,7 +23,7 @@
     "svelte-preprocess": "^4.7.3",
     "svelte-select": "^4.4.7",
     "topojson-client": "^3.1.0",
-    "vite": "^3.2.3"
+    "vite": "^4.0.0"
   },
   "type": "module"
 }
