@@ -2,7 +2,7 @@
 import adapter from '@sveltejs/adapter-static';
 
 const production = process.env.NODE_ENV === 'production';
-const ons_path = process.env.APP_PATH && process.env.APP_PATH.includes('ons');
+const ons_build = process.env.PUBLIC_APP_PATH === 'ons';
 
 const config = {
 	kit: {
@@ -11,13 +11,13 @@ const config = {
 			// Options below are defaults
 			pages: 'build',
 			assets: 'build',
-			fallback: production && !ons_path ? '404.html' : null
+			fallback: production && !ons_build ? '404.html' : null
 		}),
 		prerender: {
 			handleHttpError: 'warn'
 		},
 		paths: {
-			base: production && ons_path ? '/visualisations/areas' : production ? '/geo-hub' : ''
+			base: production && ons_build ? '/visualisations/areas' : production ? '/geo-hub' : ''
 		}
 	}
 };

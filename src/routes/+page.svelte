@@ -34,28 +34,28 @@
 	<meta property="og:url" content="{assets}/" />
 	<meta property="og:image" content="{assets}/img/og.png" />
 	<meta property="og:image:type" content="image/png" />
-	<meta name="description" content="Explore content for England and Wales from the ONS">
-	<meta property="og:description" content="Explore content for England and Wales from the ONS" />
+	<meta name="description" content="Get data about people and the communities they live in, includes population, economy and health.">
+	<meta property="og:description" content="Get data about people and the communities they live in, includes population, economy and health." />
 </svelte:head>
 
 <Titleblock
 	breadcrumb="{[{label: 'Home', url: '/', refresh: true}, {label: 'Find a geographic area'}]}">
 	<Headline>Find facts and figures about areas in England and Wales</Headline>
 	<p class="subtitle">
-		Find an area in England and Wales to get facts and figures on different topics, including population, identity, housing, work, education and health.
+		Get data about people and the communities they live in, includes population, identity, housing, people in or out of work, education and health.
 	</p>
 </Titleblock>
 <Article>
   <p>
-    You can find areas including local authorities, wards, parishes and parliamentary constituencies.
+    You can find information about your area, local authority, ward, parish or parliamentary constituency.
   </p>
   <p>
-    You can also navigate through all available areas, starting from <a href="{base}/E92000001/">England</a> or <a href="{base}/W92000004/">Wales</a>.
+    If you do not know the name of the area or postcode you can start your search from either <a href="{base}/E92000001/">England</a> or <a href="{base}/W92000004/">Wales</a>.
   </p>
 
   <label for="search" class="lbl-search">
     <strong>Search by area name or postcode</strong><br/>
-    For example, “London” or “EC1M 3AB”
+    For example, “London” or “PO15 5RR”
   </label>
   <Select id="search" items={places} mode="search" idKey="areacd" labelKey="areanm" groupKey="group" autoClear on:select={navTo}/>
 
