@@ -17,7 +17,7 @@
   const analyticsId = "GTM-MBCBVQS";
   const analyticsProps = {
     "contentTitle": "Area hub",
-    "releaseDate": "20230116",
+    "releaseDate": "20230117",
     "contentType": "exploratory"
   };
 </script>

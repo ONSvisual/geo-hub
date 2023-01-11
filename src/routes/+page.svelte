@@ -1,7 +1,7 @@
 <script>
 	import { goto } from "$app/navigation";
 	import { base } from "$app/paths";
-	import { assets } from "$lib/config";
+	import { assets, geoCodesLookup } from "$lib/config";
 	import { makePath } from "$lib/utils";
 
 	import Titleblock from "$lib/layout/Titleblock.svelte";
@@ -21,6 +21,12 @@
       postcode = e.detail;
     } else {
       postcode = null;
+      analyticsEvent({
+        event: "searchSelect",
+        areaCode: e.detail.areacd,
+        areaName: e.detail.areanm,
+        areaType: geoCodesLookup[e.detail.areacd.slice(0, 3)].label
+      });
       goto(`${base}/${makePath(e.detail.areacd)}`);
     }
 	}

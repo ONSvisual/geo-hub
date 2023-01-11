@@ -3,15 +3,15 @@
 	import { afterNavigate, goto } from "$app/navigation";
 	import { base } from "$app/paths";
 	import { page } from "$app/stores";
-	import { assets, geoTypes } from "$lib/config";
-	import { capitalise, makeGeoJSON, getName, filterLinks, parseTemplate, addArticle, getPlace, makePath } from "$lib/utils";
+	import { assets, geoTypes, geoCodesLookup } from "$lib/config";
+	import { capitalise, makeGeoJSON, getName, filterLinks, parseTemplate, addArticle, getPlace, makePath, analyticsEvent } from "$lib/utils";
 	import topojson from "$lib/data/ew-ctry-rgn.json";
 
 	import Titleblock from "$lib/layout/Titleblock.svelte";
 	import Headline from "$lib/layout/partial/Headline.svelte";
 	import Subhead from "$lib/layout/partial/Subhead.svelte";
 	import Content from "$lib/layout/Content.svelte";
-	import Article from "$lib/layout/Article.svelte";
+	// import Article from "$lib/layout/Article.svelte";
 	// import Section from "$lib/layout/Section.svelte";
 	import Cards from "$lib/layout/Cards.svelte";
 	import Card from "$lib/layout/partial/Card.svelte";
@@ -46,6 +46,18 @@
 			childType = null;
 		}
 		if (place && map) map.fitBounds(place.bounds, {padding: 20});
+    
+    let areaData = place ? {
+      areaCode: place.areacd,
+      areaName: place.areanm,
+      areaType: type.label
+    } : {};
+    analyticsEvent({
+      event: "pageView",
+      pageURL: $page.url.href,
+      ...areaData,
+      contentType: "exploratory",
+    });
 	}
 	onMount(pageLoad);
 	afterNavigate(pageLoad);
@@ -55,17 +67,26 @@
 	let hovered = null;
 
 	// Functions etc
-	function navTo(e, options = {}) {
+	function navTo(e, options = {}, type = "search") {
     if (e.detail.type === "postcode") {
       postcode = e.detail;
     } else {
       postcode = null;
+      analyticsEvent({
+        event: type === "map" ? "mapSelect" : "searchSelect",
+        areaCode: e.detail.areacd,
+        areaName: e.detail.areanm,
+        areaType: geoCodesLookup[e.detail.areacd.slice(0, 3)].label
+      });
       goto(`${base}/${makePath(e.detail.areacd)}`, options);
     }
 	}
 	function mapSelect(e) {
-    e.detail.areacd = e.detail.id;
-		navTo(e, {noScroll: true});
+    let code = e.detail.id;
+    let child = place.children.find(p => p.areacd === code);
+    e.detail.areacd = code;
+    e.detail.areanm = child.hclnm ? child.hclnm : child.areanm ? child.areanm : child.areacd;
+		navTo(e, {noScroll: true}, "map");
 	}
 </script>
 
@@ -183,7 +204,7 @@
 			<span class="type-label">{capitalise(childType.plural)}</span><br/>
 			{/if}
       {#each place.childTypes as type}
-      <div class:visuallyhidden={type.code !== childType.code}>
+      <div class:visuallyhidden={type.key !== childType.key}>
         {#each place.children.filter(c => type.codes.includes(c.areacd.slice(0, 3))) as child, i}
         <a href="{base}/{makePath(child.areacd)}" data-sveltekit-noscroll>{getName(child)}</a>{i === place.children.length - 1 ? '' : ', '} 
         {/each}

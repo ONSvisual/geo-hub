@@ -1,7 +1,8 @@
 <script>
   import { createEventDispatcher } from "svelte";
 	import { base } from "$app/paths";
-	import { makePath, capitalise } from "$lib/utils";
+  import { geoCodesLookup } from "$lib/config";
+	import { makePath, capitalise, analyticsEvent } from "$lib/utils";
 	import Icon from "$lib/ui/Icon.svelte";
 
   const dispatch = createEventDispatcher();
@@ -18,7 +19,15 @@
     {#each postcode.places as p}
     <tr>
       <td><strong>{capitalise(p.typenm)}</strong></td>
-      <td><a href="{base}/{makePath(p.areacd)}">{p.areanm}</a></td>
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <td><a
+        href="{base}/{makePath(p.areacd)}"
+        on:click={() => analyticsEvent({
+          event: "postcodeSelect",
+          areaCode: p.areacd,
+          areaName: p.areanm,
+          areaType: geoCodesLookup[p.areacd.slice(0, 3)].label
+        })}>{p.areanm}</a></td>
     </tr>
     {/each}
   </tbody>
