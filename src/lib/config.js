@@ -1,4 +1,4 @@
-export const assets = "https://onsvisual.github.io/geo-hub";
+export const assets = "https://www.ons.gov.uk/visualisations/areas";
 export const cdnUrl = "https://cdn.ons.gov.uk/maptiles/ap-geos/v1";
 
 export const geoNames = {

@@ -83,9 +83,9 @@
 	}
 	function mapSelect(e) {
     let code = e.detail.id;
-    let child = place.children.find(p => p.areacd === code);
+    let place = e.detail.feature.properties;
     e.detail.areacd = code;
-    e.detail.areanm = child.hclnm ? child.hclnm : child.areanm ? child.areanm : child.areacd;
+    e.detail.areanm = place.hclnm ? place.hclnm : place.areanm ? place.areanm : place.areacd;
 		navTo(e, {noScroll: true}, "map");
 	}
 </script>
@@ -94,13 +94,14 @@
   {#if place}
 	<title>{`${getName(place)} (${place.areacd}) - ONS`}</title>
 	<link rel="icon" href="{assets}/favicon.ico" />
+  <link rel="canonical" href="{assets}/{makePath(place.areacd)}" />
 	<meta property="og:title" content="{`${getName(place)} - ONS`}" />
 	<meta property="og:type" content="website" />
-	<meta property="og:url" content="{`${assets}/${makePath(place.areacd)}`}" />
+	<meta property="og:url" content="{assets}/{makePath(place.areacd)}" />
 	<meta property="og:image" content="{assets}/img/og.png" />
 	<meta property="og:image:type" content="image/png" />
-	<meta name="description" content="{`Explore content for ${getName(place, 'the')} from the ONS`}">
-	<meta property="og:description" content="{`Explore content for ${getName(place, 'the')} from the ONS`}" />
+	<meta name="description" content="{`Facts and figures about people living ${getName(place, 'in')} (${place.areacd}) from the ONS.`}">
+	<meta property="og:description" content="{`Facts and figures about people living ${getName(place, 'in')} (${place.areacd}) from the ONS.`}" />
   {/if}
 </svelte:head>
 
@@ -108,13 +109,19 @@
 <Titleblock
 	breadcrumb="{[{label: 'Home', url: '/', refresh: true}, ...[...place.parents].reverse().map(p => ({label: getName(p), url: `${base}/${makePath(p.areacd)}`})), {label: getName(place)}]}">
 	<Headline>{getName(place)}</Headline>
-  <Subhead>Facts and figures about people living {getName(place, "in")}</Subhead>
+  <Subhead>Facts and figures about people living {getName(place, "in")}.</Subhead>
 </Titleblock>
 
 <Content>
-  <p class="subtitle">
+  <p class="subtitle" style:max-width="768px">
 		{#if place.areacd != "K04000001"}
-		<strong>{capitalise(getName(place, "the"))}</strong> ({place.areacd}) is {addArticle(place.typenm)} <a href="{base}/{makePath(place.parents[0].areacd)}"  data-sveltekit-noscroll>{getName(place.parents[0], "in")}</a>.
+		<strong>{capitalise(getName(place, "the"))}</strong>
+      {#if ["E02", "W02"].includes(place.typecd)}
+      ({place.areacd}), also known as {place.areanm},
+      {:else}
+      ({place.areacd})
+      {/if}
+    is {addArticle(place.typenm)} <a href="{base}/{makePath(place.parents[0].areacd)}" data-sveltekit-noscroll>{getName(place.parents[0], "in")}</a>.
 		{/if}
 	</p>
   <label for="search" class="lbl-search">
@@ -126,13 +133,7 @@
   {/if}
   <hr class="ons-divider"/>
 
-	<Cards title="Facts and figures for {getName(place, "the")}" id="interactive">
-    {#each filterLinks(links, place) as link}
-    <CardFeature title={link.title} url="{parseTemplate(link.url, link.place)}" description="{parseTemplate(link.description, link.place)}" image="{link.image}"/>
-    {/each}
-	</Cards>
-  
-	<Cards title="Areas related to {getName(place, "the")}" id="related">
+  <Cards title="Areas related to {getName(place, "the")}" id="related">
 		<Card colspan={2} rowspan={2} blank>
 			<div style:height="450px">
 				<Map bind:map style="{base}/data/mapstyle.json" location={{bounds: place.bounds}} options={{fitBoundsOptions: {padding: 20}, maxBounds: [-12,47,7,62]}} controls>
@@ -214,6 +215,12 @@
 			<span class="muted">No areas available within {getName(place)}</span>
 			{/if}
 		</Card>
+	</Cards>
+
+	<Cards title="Facts and figures for {getName(place, "the")}" id="interactive">
+    {#each filterLinks(links, place) as link}
+    <CardFeature title={link.title} url="{parseTemplate(link.url, link.place)}" description="{parseTemplate(link.description, link.place)}" image="{link.image}"/>
+    {/each}
 	</Cards>
 </Content>
 {/if}

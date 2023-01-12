@@ -6,6 +6,7 @@
 
 	import Titleblock from "$lib/layout/Titleblock.svelte";
 	import Headline from "$lib/layout/partial/Headline.svelte";
+	import Subhead from "$lib/layout/partial/Subhead.svelte";
   import Article from "$lib/layout/Article.svelte";
 	import Select from "$lib/ui/Select.svelte";
   import AreaList from "$lib/ui/AreaList.svelte";
@@ -35,6 +36,7 @@
 <svelte:head>
 	<title>Find a geographic area - ONS</title>
 	<link rel="icon" href="{assets}/favicon.ico" />
+  <link rel="canonical" href="{assets}/" />
 	<meta property="og:title" content="Find a geographic area - ONS" />
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="{assets}/" />
@@ -47,9 +49,7 @@
 <Titleblock
 	breadcrumb="{[{label: 'Home', url: '/', refresh: true}, {label: 'Find a geographic area'}]}">
 	<Headline>Find facts and figures about areas in England and Wales</Headline>
-	<p class="subtitle">
-		Get data about people and the communities they live in, includes population, identity, housing, people in or out of work, education and health.
-	</p>
+  <Subhead>Get data about people and the communities they live in, includes population, identity, housing, people in or out of work, education and health.</Subhead>
 </Titleblock>
 <Article>
   <p>
@@ -61,7 +61,7 @@
 
   <label for="search" class="lbl-search">
     <strong>Search by area name or postcode</strong><br/>
-    For example, “London” or “PO15 5RR”
+    For example, “Titchfield” or “PO15 5RR”
   </label>
   <Select id="search" items={places} mode="search" idKey="areacd" labelKey="areanm" groupKey="group" autoClear on:select={navTo}/>
 

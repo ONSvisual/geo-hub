@@ -52,10 +52,14 @@ export async function getPlace(code, fetch = window.fetch) {
 export function getName(props, context = null) {
   let name = props.hclnm ? props.hclnm : props.areanm ? props.areanm : props.areacd;
   let island = name.startsWith("Isle");
-  let region = props.areacd.slice(0,3) === "E12" && !["E12000003", "E12000007"].includes(props.areacd);
-  name = name.replace("&", "and");
+  let the = [
+    "E12000001", "E12000002", "E12000004", "E12000005", "E12000006", "E12000008", "E12000009",
+    "E09000001", "E07000035"
+  ].includes(props.areacd) || 
+    name.startsWith("Vale of");
+  name = name.replace("&", "and").replace(", City of", "").replace(", County of", "");
   if (["in","the"].includes(context)) {
-    if (island || region) name = "the " + name;
+    if (island || the) name = "the " + name;
   }
   if (context === "in") {
     if (island) name = "on " + name;
@@ -108,7 +112,14 @@ export function parseTemplate(template, place) {
 }
 
 export function addArticle(str) {
-  if (!str.startsWith('unit') && ['a', 'e', 'i', 'o', 'u'].includes(str.slice(0, 1).toLowerCase())) {
+  if (str === "output area") {
+    str = "Output Area";
+  } else if (str === "lower layer super output area") {
+    str = "Lower layer Super Output Area (LSOA)";
+  } else if (str === "middle layer super output area") {
+    str = "Middle layer Super Output Area (MSOA)";
+  }
+  if (!str.startsWith('unit') && ['a', 'e', 'i', 'o', 'u'].includes(str[0].toLowerCase())) {
     return "an " + str;
   } else {
     return "a " + str;

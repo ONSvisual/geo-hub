@@ -1,92 +1,79 @@
+<script context="module">
+
+</script>
 <script>
-    import { onMount } from "svelte"
+  import { onMount } from "svelte"
+  import { page } from "$app/stores";
 
-    export let analyticsId; // Required. Google analytics/tag manager ID
-    export let analyticsProps = {}; // Optional props to describe the content
-    export let usageCookies = false; // True if usage cookies are allowed (to be read from parent component)
-    export let page = null; // Pass Svelte Kit's $page to track navigation in multi-page apps
+  export let analyticsId; // Required. Google analytics/tag manager ID
+  export let analyticsProps = {}; // Optional props to describe the content
+  export let usageCookies = false; // True if usage cookies are allowed (to be read from parent component)
 
-    let live; // Don't run analytics unless page is live on ONS site (re-set in the onMount function)
+  let live; // Don't run analytics unless page is live on ONS site (re-set in the onMount function)
 
-    let showBanner = false;
-    let showConfirm = false;
-    let message = "";
-    let location = null; // For keeping track of navigation multi-page apps
+  let showBanner = false;
+  let showConfirm = false;
+  let message = "";
+  let location = null; // For keeping track of navigation multi-page apps
 
-    function hasCookiesPreferencesSet() {
-        return -1 < document.cookie.indexOf("cookies_preferences_set=true")
+  function hasCookiesPreferencesSet() {
+      return -1 < document.cookie.indexOf("cookies_preferences_set=true")
+  }
+
+  // Check if usage cookies are allowed (for Google Analytics + Hotjar)
+  function getUsageCookieValue() {
+    var cookiesPolicyCookie = document.cookie.match(new RegExp("(^|;) ?cookies_policy=([^;]*)(;|$)"));
+    if (cookiesPolicyCookie) {
+      var decodedCookie = decodeURIComponent(cookiesPolicyCookie[2]);
+      var cookieValue = JSON.parse(decodedCookie);
+      return cookieValue.usage;
     }
+    return false;
+  }
 
-    // Check if usage cookies are allowed (for Google Analytics + Hotjar)
-    function getUsageCookieValue() {
-        var cookiesPolicyCookie = document.cookie.match(new RegExp("(^|;) ?cookies_policy=([^;]*)(;|$)"));
-        if (cookiesPolicyCookie) {
-        var decodedCookie = decodeURIComponent(cookiesPolicyCookie[2]);
-        var cookieValue = JSON.parse(decodedCookie);
-        return cookieValue.usage;
-        }
-        return false;
-    }
+  // Set site cookie with 'all' or 'essential' cookies
+  function setCookie(option) {
+    let oneYearInSeconds = 60 * 60 * 24 * 365;
+    let cookiesDomain = window.location.hostname;
+    let cookiesPreference = !0;
+    let encodedCookiesPolicy = `%7B%22essential%22%3Atrue%2C%22usage%22%3A${option == 'all' ? 'true' : 'false'}%7D`;
+    let cookiesPath = "/";
+    
+    document.cookie = `cookies_preferences_set=${cookiesPreference};max-age=${oneYearInSeconds};domain=${cookiesDomain};path=${cookiesPath};`;
+    document.cookie = `cookies_policy=${encodedCookiesPolicy};max-age=${oneYearInSeconds};domain=${cookiesDomain};path=${cookiesPath};`;
 
-    // Set site cookie with 'all' or 'essential' cookies
-    function setCookie(option) {
-        let oneYearInSeconds = 60 * 60 * 24 * 365;
-        let cookiesDomain = window.location.hostname;
-        let cookiesPreference = !0;
-        let encodedCookiesPolicy = `%7B%22essential%22%3Atrue%2C%22usage%22%3A${option == 'all' ? 'true' : 'false'}%7D`;
-        let cookiesPath = "/";
-        
-        document.cookie = `cookies_preferences_set=${cookiesPreference};max-age=${oneYearInSeconds};domain=${cookiesDomain};path=${cookiesPath};`;
-        document.cookie = `cookies_policy=${encodedCookiesPolicy};max-age=${oneYearInSeconds};domain=${cookiesDomain};path=${cookiesPath};`;
+    message = option == "all" ? "all" : "only essential";
+    if (option == "all") usageCookies = true;
+    showConfirm = true;
 
-        message = option == "all" ? "all" : "only essential";
-        if (option == "all") usageCookies = true;
-        showConfirm = true;
+    if (option == "all") initAnalytics();
+  }
 
-        if (option == "all") initAnalytics();
-    }
+  // Initialise analytics and 'window.dataLayer' (which can be used throughout the app)
+  function initAnalytics() {
+    console.log('initialising analytics');
+    window.dataLayer = [{
+    "analyticsOptOut": false,
+    "gtm.whitelist": ["google","hjtc","lcl"],
+    "gtm.blacklist": ["customScripts","sp","adm","awct","k","d","j"],
+    ...analyticsProps
+    }];
+    if (page) location =  $page.url.href;
 
-    // Initialise analytics and 'window.dataLayer' (which can be used throughout the app)
-    function initAnalytics() {
-        console.log('initialising analytics');
-        window.dataLayer = [{
-        "analyticsOptOut": false,
-        "gtm.whitelist": ["google","hjtc","lcl"],
-        "gtm.blacklist": ["customScripts","sp","adm","awct","k","d","j"],
-        ...analyticsProps
-        }];
-        if (page) location =  $page.url.hostname + $page.url.pathname + $page.url.searchParams;
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.head,
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.appendChild(j);
+    })(window,document,'script','dataLayer',analyticsId);
+  };
 
-        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-                new Date().getTime(),event:'gtm.js'});var f=d.head,
-                j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-                'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.appendChild(j);
-            })(window,document,'script','dataLayer',analyticsId);
-    };
-
-    // This code is only relevant for multi-page Svelte Kit apps. It sends an analytics event when the URL changes
-    $: if (live && usageCookies && page) {
-        let newlocation = $page.url.hostname + $page.url.pathname + $page.url.searchParams;
-        if (newlocation !== location) {
-        location = newlocation;
-
-        window.dataLayer.push({
-            event: "pageView",
-            page_path : $page.url.pathname,
-            page_location: location,
-            page_title: document ? document.title : null
-        });
-        console.log('navigated to ' + location);
-        }
-    }
-
-    onMount(() => {
-        live = true;
-        //live = window.location.hostname == "www.ons.gov.uk" || window.location.hostname == "cy.ons.gov.uk";
-        showBanner = !hasCookiesPreferencesSet();
-        usageCookies = getUsageCookieValue();
-        if (usageCookies && live) initAnalytics();
-    });
+  onMount(() => {
+    live = true;
+    //live = window.location.hostname == "www.ons.gov.uk" || window.location.hostname == "cy.ons.gov.uk";
+    showBanner = !hasCookiesPreferencesSet();
+    usageCookies = getUsageCookieValue();
+    if (usageCookies && live) initAnalytics();
+  });
 </script>
 
 {#if showBanner}

@@ -178,7 +178,6 @@
 	}
 	:global(.selectbox > .selectContainer) {
 		box-shadow: inset -40px 0px #206095;
-		z-index: 10;
 	}
 	:global(.selectbox.multi-selected > .selectContainer) {
 		box-shadow: none !important;
