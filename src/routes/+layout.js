@@ -1,6 +1,6 @@
 import { PUBLIC_APP_PATH } from '$env/static/public';
 
-export const prerender = PUBLIC_APP_PATH === "ons";
+export const prerender = PUBLIC_APP_PATH && PUBLIC_APP_PATH.includes("ons");
 export const trailingSlash = 'always';
 
 import { base } from "$app/paths";

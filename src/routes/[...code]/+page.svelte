@@ -4,7 +4,7 @@
 	import { base } from "$app/paths";
 	import { page } from "$app/stores";
 	import { assets, geoTypes, geoCodesLookup } from "$lib/config";
-	import { capitalise, makeGeoJSON, getName, filterLinks, parseTemplate, addArticle, getPlace, makePath } from "$lib/utils";
+	import { capitalise, makeGeoJSON, getName, filterLinks, parseTemplate, addArticle, getPlace, makePath, filterChildren } from "$lib/utils";
   import { analyticsEvent } from "$lib/layout/AnalyticsBanner.svelte";
 	import topojson from "$lib/data/ew-ctry-rgn.json";
 
@@ -139,7 +139,6 @@
 			<div style:height="450px">
 				<Map bind:map style="{base}/data/mapstyle.json" location={{bounds: place.bounds}} options={{fitBoundsOptions: {padding: 20}, maxBounds: [-12,47,7,62]}} controls>
 					{#each geoTypes as geo}
-					{console.log(geo.key)}
 					<MapSource
 						id={geo.key}
 						type={geo.source.type}
@@ -207,8 +206,8 @@
 			{/if}
       {#each place.childTypes as type}
       <div class:visuallyhidden={type.key !== childType.key}>
-        {#each place.children.filter(c => type.codes.includes(c.areacd.slice(0, 3))) as child, i}
-        <a href="{base}/{makePath(child.areacd)}" data-sveltekit-noscroll>{getName(child)}</a>{i === place.children.length - 1 ? '' : ', '} 
+        {#each filterChildren(place, type) as child, i}
+        <a href="{base}/{makePath(child.areacd)}" data-sveltekit-noscroll>{getName(child)}</a>{i === filterChildren(place, type).length - 1 ? '' : ', '} 
         {/each}
       </div>
       {/each}
@@ -220,7 +219,7 @@
 
 	<Cards title="Facts and figures for {getName(place, "the")}" id="interactive">
     {#each filterLinks(links, place) as link}
-    <CardFeature title={link.title} url="{parseTemplate(link.url, link.place)}" description="{parseTemplate(link.description, link.place)}" image="{link.image}"/>
+    <CardFeature title={link.title} url="{parseTemplate(link.url, link.place)}" description="{parseTemplate(link.description, link.place)}" image="{link.image}" bgcolor="{link.bgcolor}"/>
     {/each}
 	</Cards>
 </Content>

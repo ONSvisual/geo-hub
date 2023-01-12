@@ -2,7 +2,7 @@
 import adapter from '@sveltejs/adapter-static';
 
 const production = process.env.NODE_ENV === 'production';
-const ons_build = process.env.PUBLIC_APP_PATH === 'ons';
+const ons_build = process.env.PUBLIC_APP_PATH && process.env.PUBLIC_APP_PATH.includes('ons');
 
 const config = {
 	kit: {

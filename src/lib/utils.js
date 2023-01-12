@@ -21,6 +21,10 @@ export async function getPlace(code, fetch = window.fetch) {
 		let res = await fetch(`${cdnUrl}/${typeCode}/${code}.json`);
 		let json = await res.json();
 
+    json.properties.children = json.properties.children
+      .map(c => c.hclnm ? {areacd: c.areacd, areanm: c.hclnm} : c.areanm ? c : {areacd: c.areacd, areanm: c.areacd})
+      .sort((a, b) => a.areanm.localeCompare(b.areanm));
+
 		if (geoNames[typeCode]) json.properties.typenm = geoNames[typeCode].label; 
 		let childCodes = json.properties.children[0] ?
 				Array.from(new Set(json.properties.children.map(d => d.areacd.slice(0, 3)))) : null;
@@ -137,6 +141,10 @@ export function makePath(code) {
   } else {
     return "area/?code=" + code;
   }
+}
+
+export function filterChildren(place, type) {
+  return place.children.filter(c => type.codes.includes(c.areacd.slice(0, 3)));
 }
 
 export function makeGeoJSON(topojson, layer) {
