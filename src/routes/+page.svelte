@@ -3,6 +3,7 @@
 	import { base } from "$app/paths";
 	import { assets, geoCodesLookup } from "$lib/config";
 	import { makePath } from "$lib/utils";
+  import { analyticsEvent } from "$lib/layout/AnalyticsBanner.svelte";
 
 	import Titleblock from "$lib/layout/Titleblock.svelte";
 	import Headline from "$lib/layout/partial/Headline.svelte";

@@ -1,5 +1,7 @@
 <script context="module">
-
+  export function analyticsEvent(props) {
+    if (window.dataLayer) window.dataLayer.push(props);
+  }
 </script>
 <script>
   import { onMount } from "svelte"

@@ -2,7 +2,8 @@
   import { createEventDispatcher } from "svelte";
 	import { base } from "$app/paths";
   import { geoCodesLookup } from "$lib/config";
-	import { makePath, capitalise, analyticsEvent } from "$lib/utils";
+	import { makePath, capitalise } from "$lib/utils";
+  import { analyticsEvent } from "$lib/layout/AnalyticsBanner.svelte";
 	import Icon from "$lib/ui/Icon.svelte";
 
   const dispatch = createEventDispatcher();

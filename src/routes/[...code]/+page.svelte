@@ -4,7 +4,8 @@
 	import { base } from "$app/paths";
 	import { page } from "$app/stores";
 	import { assets, geoTypes, geoCodesLookup } from "$lib/config";
-	import { capitalise, makeGeoJSON, getName, filterLinks, parseTemplate, addArticle, getPlace, makePath, analyticsEvent } from "$lib/utils";
+	import { capitalise, makeGeoJSON, getName, filterLinks, parseTemplate, addArticle, getPlace, makePath } from "$lib/utils";
+  import { analyticsEvent } from "$lib/layout/AnalyticsBanner.svelte";
 	import topojson from "$lib/data/ew-ctry-rgn.json";
 
 	import Titleblock from "$lib/layout/Titleblock.svelte";
