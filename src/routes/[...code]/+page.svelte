@@ -3,7 +3,7 @@
 	import { afterNavigate, goto } from "$app/navigation";
 	import { base } from "$app/paths";
 	import { page } from "$app/stores";
-	import { assets, geoTypes, geoCodesLookup } from "$lib/config";
+	import { assets, geoTypes, geoCodesLookup, noIndex } from "$lib/config";
 	import { capitalise, makeGeoJSON, getName, filterLinks, parseTemplate, addArticle, getPlace, makePath, filterChildren } from "$lib/utils";
   import { analyticsEvent } from "$lib/layout/AnalyticsBanner.svelte";
 	import topojson from "$lib/data/ew-ctry-rgn.json";
@@ -103,7 +103,7 @@
 	<meta property="og:image:type" content="image/png" />
 	<meta name="description" content="{`Facts and figures about people living ${getName(place, 'in')} (${place.areacd}) from the ONS.`}">
 	<meta property="og:description" content="{`Facts and figures about people living ${getName(place, 'in')} (${place.areacd}) from the ONS.`}" />
-  {#if ["E00", "W00", "E01", "W01"].includes(place.typecd)}
+  {#if noIndex.includes(place.typecd)}
   <meta name="robots" content="noindex">
   {/if}
   {/if}
@@ -129,7 +129,7 @@
 		{/if}
 	</p>
   <label for="search" class="lbl-search">
-    Find another area
+    <strong>Find another area</strong>
   </label>
 	<Select id="search" items={places} mode="search" idKey="areacd" labelKey="areanm" groupKey="group" autoClear on:select={navTo}/>
   {#if postcode}
@@ -137,7 +137,7 @@
   {/if}
   <hr class="ons-divider"/>
 
-  <Cards title="Areas related to {getName(place, "the")}" id="related">
+  <Cards title="Areas in {["K04", "E92", "W92"].includes(place.typecd) ? '' : 'and around'} {getName(place, "the")}" id="related">
 		<Card colspan={2} rowspan={2} blank>
 			<div style:height="450px">
 				<Map bind:map style="{base}/data/mapstyle.json" location={{bounds: place.bounds}} options={{fitBoundsOptions: {padding: 20}, maxBounds: [-12,47,7,62]}} controls>
@@ -184,7 +184,7 @@
 				</Map>
 			</div>
 		</Card>
-		<Card title="Parent areas of {getName(place, "the")}">
+		<Card title="Choose a larger area">
 			{#if place.parents[0]}
 			{#each [...place.parents].reverse() as parent, i}
 			<span class="parent" style:margin-left="{i === 0 ? 0 : `${(i - 1) * 20}px`}">
@@ -210,7 +210,7 @@
       {#each place.childTypes as type}
       <div class:visuallyhidden={type.key !== childType.key}>
         {#each filterChildren(place, type) as child, i}
-        <a href="{base}/{makePath(child.areacd)}" data-sveltekit-noscroll rel="{["E00", "W00", "E01", "W01"].includes(child.areacd.slice(0, 3)) ? "nofollow" : null}">{getName(child)}</a>{i === filterChildren(place, type).length - 1 ? '' : ', '} 
+        <a href="{base}/{makePath(child.areacd)}" data-sveltekit-noscroll rel="{noIndex.includes(child.areacd.slice(0, 3)) ? "nofollow" : null}">{getName(child)}</a>{i === filterChildren(place, type).length - 1 ? '' : ', '} 
         {/each}
       </div>
       {/each}

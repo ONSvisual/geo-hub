@@ -11,6 +11,8 @@ export const geoNames = {
   "E11": {label: "metropolitan county", plural: "metropolital counties"}
 };
 
+export const noIndex = ["E00", "W00", "E01", "W01", "E02", "W02", "E04", "W04", "E05", "W05"];
+
 export const geoTypes = [
 	{
     key: "ew",
