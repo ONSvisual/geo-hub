@@ -27,7 +27,7 @@ export async function getPlace(code, fetch = window.fetch) {
 
 		if (geoNames[typeCode]) json.properties.typenm = geoNames[typeCode].label; 
 		let childCodes = json.properties.children[0] ?
-				Array.from(new Set(json.properties.children.map(d => d.areacd.slice(0, 3)))) : null;
+				Array.from(new Set(json.properties.children.map(d => d.areacd.slice(0, 3)))).sort((a, b) => a.localeCompare(b)) : null;
 		json.properties.childTypes = childCodes ? Array.from(new Set(childCodes.map(c => geoCodesLookup[c]))) : [];
 		if (typeCode === "E12") {
 			json.properties.childTypes = json.properties.childTypes.filter(c => c.key !== "lad");

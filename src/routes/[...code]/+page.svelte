@@ -93,16 +93,19 @@
 
 <svelte:head>
   {#if place}
-	<title>{`${getName(place)} (${place.areacd}) - ONS`}</title>
+	<title>{`${getName(place)} facts and figures - ${place.areacd} - ONS`}</title>
 	<link rel="icon" href="{assets}/favicon.ico" />
   <link rel="canonical" href="{assets}/{makePath(place.areacd)}" />
-	<meta property="og:title" content="{`${getName(place)} - ONS`}" />
+	<meta property="og:title" content="{`${getName(place)} facts and figures - ONS`}" />
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="{assets}/{makePath(place.areacd)}" />
 	<meta property="og:image" content="{assets}/img/og.png" />
 	<meta property="og:image:type" content="image/png" />
 	<meta name="description" content="{`Facts and figures about people living ${getName(place, 'in')} (${place.areacd}) from the ONS.`}">
 	<meta property="og:description" content="{`Facts and figures about people living ${getName(place, 'in')} (${place.areacd}) from the ONS.`}" />
+  {#if ["E00", "W00", "E01", "W01"].includes(place.typecd)}
+  <meta name="robots" content="noindex">
+  {/if}
   {/if}
 </svelte:head>
 
@@ -207,7 +210,7 @@
       {#each place.childTypes as type}
       <div class:visuallyhidden={type.key !== childType.key}>
         {#each filterChildren(place, type) as child, i}
-        <a href="{base}/{makePath(child.areacd)}" data-sveltekit-noscroll>{getName(child)}</a>{i === filterChildren(place, type).length - 1 ? '' : ', '} 
+        <a href="{base}/{makePath(child.areacd)}" data-sveltekit-noscroll rel="{["E00", "W00", "E01", "W01"].includes(child.areacd.slice(0, 3)) ? "nofollow" : null}">{getName(child)}</a>{i === filterChildren(place, type).length - 1 ? '' : ', '} 
         {/each}
       </div>
       {/each}

@@ -3,6 +3,7 @@ import adapter from '@sveltejs/adapter-static';
 
 const production = process.env.NODE_ENV === 'production';
 const ons_build = process.env.PUBLIC_APP_PATH && process.env.PUBLIC_APP_PATH.includes('ons');
+const static_build = process.env.PUBLIC_APP_PATH && process.env.PUBLIC_APP_PATH.includes('github');
 
 const config = {
 	kit: {
@@ -11,7 +12,7 @@ const config = {
 			// Options below are defaults
 			pages: 'build',
 			assets: 'build',
-			fallback: production && !ons_build ? '404.html' : null
+			fallback: production && !ons_build && !static_build ? '404.html' : null
 		}),
 		prerender: {
 			handleHttpError: 'warn'
