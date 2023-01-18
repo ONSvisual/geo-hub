@@ -21,7 +21,7 @@
     <a class="margin-left--0 tile__link tile__link--highlighted-content-title font-size--24" href="{url}" target="{description.toLowerCase().includes("external") ? '_blank' : null}" data-gtm-type="related-release">
       {title}
     </a>
-    {#if description.toLowerCase().includes("external")}
+    {#if description.includes("(external)")}
     <span class="inline-icon"><Icon type="launch"/></span>
     {/if}
   </h2>
