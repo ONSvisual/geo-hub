@@ -12,7 +12,7 @@
 	import Select from "$lib/ui/Select.svelte";
   import AreaList from "$lib/ui/AreaList.svelte";
 	import Icon from "$lib/ui/Icon.svelte";
-	import Notice from "$lib/ui/Notice.svelte";
+	// import Notice from "$lib/ui/Notice.svelte";
 
 	export let data;
 	let { places, lookup } = data;
@@ -71,9 +71,9 @@
   <AreaList {postcode} on:clear={() => postcode = null}/>
   {/if}
 
-  <Notice>
+  <!-- <Notice>
     The pages in this section link to only a small selection of the local area statistics produced by the ONS. Read more on our <a href="https://www.ons.gov.uk/help/localstatistics">local statistics page</a>.
-  </Notice>
+  </Notice> -->
 
   <h2 class="heading-bold">Other countries in the UK</h2>
   <p>

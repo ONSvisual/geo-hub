@@ -20,7 +20,7 @@
 	import Select from "$lib/ui/Select.svelte";
   import AreaList from "$lib/ui/AreaList.svelte";
 	import Icon from "$lib/ui/Icon.svelte";
-	import Notice from "$lib/ui/Notice.svelte";
+	// import Notice from "$lib/ui/Notice.svelte";
 	import { Map, MapSource, MapLayer } from "@onsvisual/svelte-maps";
 	import MapTooltip from "@onsvisual/svelte-maps/src/MapTooltip.svelte";
 
@@ -226,8 +226,8 @@
     <CardFeature title={link.title} url="{parseTemplate(link.url, link.place)}" description="{parseTemplate(link.description, link.place)}" image="{link.image}" bgcolor="{link.bgcolor}"/>
     {/each}
 	</Cards>
-  <Notice>
+  <!-- <Notice>
     These links only cover a small selection of the local area statistics produced by the ONS. Read more on our <a href="https://www.ons.gov.uk/help/localstatistics">local statistics page</a>.
-  </Notice>
+  </Notice> -->
 </Content>
 {/if}
