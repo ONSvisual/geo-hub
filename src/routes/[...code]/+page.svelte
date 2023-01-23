@@ -28,6 +28,7 @@
 	let { places, place, type, lookup, links } = data;
 	let childType = place?.childTypes[0];
   let postcode;
+  let firstLoad = true;
 
 	async function pageLoad() {
     postcode = null;
@@ -41,7 +42,7 @@
       type = data.type;
     }
     if (!place) {
-			goto(`${base}/`)
+			goto(`${base}/`);
 		} else if (place && place.childTypes[0]) {
 			if (!place.childTypes.includes(childType)) childType = place.childTypes[0];
 		} else {
@@ -49,17 +50,22 @@
 		}
 		if (place && map) map.fitBounds(place.bounds, {padding: 20});
     
-    let areaData = place ? {
-      areaCode: place.areacd,
-      areaName: place.areanm,
-      areaType: type.label
-    } : {};
-    analyticsEvent({
-      event: "pageView",
-      pageURL: $page.url.href,
-      ...areaData,
-      contentType: "exploratory",
-    });
+    if (firstLoad) {
+      firstLoad = false;
+    } else {
+      let areaData = place ? {
+        areaCode: place.areacd,
+        areaName: getName(place),
+        areaType: type.label
+      } : {};
+      console.log("areaData", areaData);
+      analyticsEvent({
+        event: "pageView",
+        pageURL: $page.url.href,
+        ...areaData,
+        contentType: "exploratory",
+      });
+    }
 	}
 	onMount(pageLoad);
 	afterNavigate(pageLoad);
@@ -87,7 +93,7 @@
     let code = e.detail.id;
     let place = e.detail.feature.properties;
     e.detail.areacd = code;
-    e.detail.areanm = place.hclnm ? place.hclnm : place.areanm ? place.areanm : place.areacd;
+    e.detail.areanm = getName(place);
 		navTo(e, {noScroll: true}, "map");
 	}
 </script>

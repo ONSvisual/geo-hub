@@ -61,8 +61,9 @@
 				}
 			}
 		} else {
-      let code = e.detail[idKey];
-			dispatch("select", {type: "place", areacd: code});
+      let areacd = e.detail[idKey];
+      let areanm = e.detail[labelKey];
+			dispatch("select", {type: "place", areacd, areanm });
 			placeholder = "Type a place name or postcode";
 		}
 	}

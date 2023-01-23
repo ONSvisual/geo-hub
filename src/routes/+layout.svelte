@@ -18,6 +18,7 @@
   const analyticsProps = {
     "contentTitle": "Area hub",
     "releaseDate": "20230117",
+    "outputSeries": "areahub",
     "contentType": "exploratory"
   };
 </script>
