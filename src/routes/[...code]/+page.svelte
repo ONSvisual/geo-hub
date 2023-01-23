@@ -58,7 +58,6 @@
         areaName: getName(place),
         areaType: type.label
       } : {};
-      console.log("areaData", areaData);
       analyticsEvent({
         event: "pageView",
         pageURL: $page.url.href,

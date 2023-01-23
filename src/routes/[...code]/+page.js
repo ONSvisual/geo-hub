@@ -1,4 +1,5 @@
 import { getPlace } from "$lib/utils";
+import { building } from '$app/environment';
 
 export async function load({ fetch, params, parent }) {
 	const stuff = await parent();
@@ -10,7 +11,7 @@ export async function load({ fetch, params, parent }) {
 
 	let { place, type } = await getPlace(code, fetch);
 
-  console.log(code);
+  if (building) console.log(code);
 	
   return { places, lookup, place, type, links };
 }
