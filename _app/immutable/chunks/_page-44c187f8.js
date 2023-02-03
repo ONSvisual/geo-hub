@@ -1,0 +1,1 @@
+import{i as c}from"./utils-3249d854.js";async function i({fetch:e,params:t,parent:l}){let o=(await l()).links,a=t.code.split("/")[0],{place:n,type:s}=await c(a,e);return{place:n,type:s,links:o}}const p=Object.freeze(Object.defineProperty({__proto__:null,load:i},Symbol.toStringTag,{value:"Module"}));export{p as _,i as l};
