@@ -25,7 +25,7 @@
 	import MapTooltip from "@onsvisual/svelte-maps/src/MapTooltip.svelte";
 
 	export let data;
-	let { places, place, type, lookup, links } = data;
+	let { place, type, links } = data;
 	let childType = place?.childTypes[0];
   let postcode;
   let firstLoad = true;
@@ -137,7 +137,7 @@
   <label for="search" class="lbl-search">
     <strong>Find another area</strong>
   </label>
-	<Select id="search" items={places} mode="search" idKey="areacd" labelKey="areanm" groupKey="group" autoClear on:select={navTo}/>
+	<Select id="search" mode="search" idKey="areacd" labelKey="areanm" groupKey="group" autoClear on:select={navTo}/>
   {#if postcode}
   <AreaList {postcode} on:clear={() => postcode = null}/>
   {/if}

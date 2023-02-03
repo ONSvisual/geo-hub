@@ -14,8 +14,6 @@
 	import Icon from "$lib/ui/Icon.svelte";
 	// import Notice from "$lib/ui/Notice.svelte";
 
-	export let data;
-	let { places, lookup } = data;
   let postcode = null;
 
 	// Functions etc
@@ -65,7 +63,7 @@
     <strong>Search by area name or postcode</strong><br/>
     For example, “Titchfield” or “PO15 5RR”
   </label>
-  <Select id="search" items={places} mode="search" idKey="areacd" labelKey="areanm" groupKey="group" autoClear on:select={navTo}/>
+  <Select id="search" mode="search" idKey="areacd" labelKey="areanm" groupKey="group" autoClear on:select={navTo}/>
 
   {#if postcode}
   <AreaList {postcode} on:clear={() => postcode = null}/>

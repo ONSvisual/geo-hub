@@ -1,6 +1,8 @@
 <script>
 	import { onMount, createEventDispatcher } from "svelte";
-  import { geoTypes, geoReverseLookup } from "$lib/config";
+  import { base } from "$app/paths";
+  import { geoTypes, geoReverseLookup, geoCodesLookup, geoNames } from "$lib/config";
+  import { getData, capitalise } from "$lib/utils";
 	import Select from "svelte-select";
 
 	const searchIcon = `<svg viewBox="0 0 20 20" fill-rule="evenodd"><path d="M0,8a8,8,0,1,0,16,0a8,8,0,1,0,-16,0ZM3,8a5,5,0,1,0,10,0a5,5,0,1,0,-10,0Z"/><path d="M18,20L20,18L14,12L12,14Z"/></svg>`;
@@ -10,7 +12,6 @@
 	export let id = "";
 	export let container = undefined;
 	export let mode = "default";
-	export let items;
 	export let placeholder = "Type an area name or postcode";
 	export let value = null;
 	export let filterText = "";
@@ -87,10 +88,27 @@
 	: (label, filterText, option) => `${label}`.split("<")[0].toLowerCase().slice(0, filterText.length) == filterText.toLowerCase();
 	
 	let el;
+  let items;
 	let isFocused;
 	let listOpen;
 	let isWaiting;
 	let handleClear;
+
+  const getTypeLabel = (type) => geoNames[type] ? geoNames[type].label : geoCodesLookup[type].label;
+
+  async function getPlaces() {
+    let places = await getData(`${base}/data/csv/places.csv`);
+    places.sort((a, b) => a.areanm.localeCompare(b.areanm));
+    let lookup = {};
+    places.forEach(d => lookup[d.areacd] = d);
+    places.forEach(d => {
+      let type = d.areacd.slice(0, 3);
+      d.group = type === "K04" ? "" :
+        d.parent ? `${capitalise(getTypeLabel(type))} in ${lookup[d.parent].areanm}` :
+        capitalise(getTypeLabel(type));
+    });
+    return places;
+  }
 	
 	const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -111,18 +129,14 @@
 		}
 	}
 	
-	onMount(() => {
-		let style = el.style;
-		style.setProperty("--firstItem", colors[0 % colors.length]);
-		style.setProperty("--secondItem", colors[1 % colors.length]);
-		style.setProperty("--thirdItem", colors[2 % colors.length]);
-		style.setProperty("--fourthItem", colors[3 % colors.length]);
-		style.setProperty("--borderColor", borderColor);
-	});
+	onMount(async () => items = await getPlaces());
 </script>
 
-<div class="selectbox" class:multi-selected={value && isMulti} class:focused={isFocused} class:selected={value && !listOpen && !isMulti} bind:this={el}>
-	<Select
+<div class="selectbox" class:multi-selected={value && isMulti} class:focused={isFocused} class:selected={value && !listOpen && !isMulti}
+  style:--firstItem={colors[0 % colors.length]} style:--secondItem={colors[1 % colors.length]} style:--thirdItem={colors[2 % colors.length]} style:--fourthItem={colors[3 % colors.length]} style:--borderColor={borderColor}
+  bind:this={el}>
+	{#if items}
+  <Select
 		{id} {container} {items} {placeholder} {isMulti} {isSearchable}
 		{groupBy} {loadOptions} {getSelectionLabel} {getOptionLabel} {itemFilter}
 		{ariaValues} {ariaListOpen} {ariaFocused} {noOptionsMessage} {indicatorSvg}
@@ -131,6 +145,7 @@
 		bind:isFocused bind:value bind:listOpen bind:filterText bind:isWaiting bind:handleClear
 		on:select={handleSelect} on:clear on:loaded on:error
 		showIndicator isClearable={!isClearable ? false : !isMulti}/>
+  {/if}
 </div>
 
 <style>

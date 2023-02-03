@@ -19,3 +19,4 @@ files.forEach(file => {
     str = "//js\n" + str;
     fs.writeFileSync(file, str);
 });
+console.log(`Fixed ${files.length} JS files to avoid mimetype errors...`);

@@ -2,6 +2,7 @@ export const assets = "https://www.ons.gov.uk/visualisations/areas";
 export const cdnUrl = "https://cdn.ons.gov.uk/maptiles/ap-geos/v1";
 
 export const geoNames = {
+  "W04": {label: "community", plural: "communities"},
   "E06": {label: "unitary authority", plural: "unitary authorities"},
   "W06": {label: "unitary authority", plural: "unitary authorities"},
   "E07": {label: "non-metropolitan district", plural: "non-metropolitan districts"},

@@ -42,7 +42,18 @@ export async function getPlace(code, fetch = window.fetch) {
 					...json.properties.childTypes
 				];
 			}
-		} 
+		} else if (typeCode === "W06") {
+      json.properties.childTypes = json.properties.childTypes.filter(c => c.key !== "par");
+      json.properties.childTypes = [
+        ...json.properties.childTypes,
+        {
+          key: "par",
+          codes: ["W04"],
+          label: "community",
+          plural: "communities"
+        }
+      ];
+    }
     return {
       place: json.properties,
       type: geoCodesLookup[typeCode]
@@ -135,7 +146,7 @@ export function makePath(code) {
     "K04", "E92", "W92",
     "E10", "E11", "E12",
     "E06", "E07", "E08", "E09", "W06",
-    // "E14", "W07"
+    "E14", "W07"
   ].includes(code.slice(0, 3))) {
     return code + "/";
   } else {

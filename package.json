@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
-    "build-ons": "set PUBLIC_APP_PATH=ons && vite build && node js-fix",
-    "build-ons-unix": "PUBLIC_APP_PATH=ons vite build && node js-fix",
+    "build-ons": "set PUBLIC_APP_PATH=ons && vite build && node js-fix && node gen-sitemap",
+    "build-ons-unix": "PUBLIC_APP_PATH=ons vite build && node js-fix && node gen-sitemap",
     "build-preview": "set PUBLIC_APP_PATH=github && vite build",
     "preview": "vite preview",
     "deploy": "gh-pages -d build -t true"
