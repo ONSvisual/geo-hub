@@ -138,3 +138,28 @@ hr.ons-divider {
   border-top: 1px solid rgb(128, 128, 128);
   margin: 20px 0 0;
 }
+ul.list-columns {
+  list-style: none;
+  margin: 4px 0 8px;
+  padding: 0;
+  column-width: 170px;
+  overflow-x: none;
+}
+ul.list-columns > li {
+  font-size: 16px !important;
+  margin: 0;
+  padding: 0;
+}
+.btn-link {
+  width: auto!important;
+  height: auto!important;
+  background: 0 0!important;
+  border: none!important;
+  font-size: 16px;
+  padding: 0;
+  margin: 0;
+  color: #206095!important;
+  font-weight: 400;
+  text-decoration: underline;
+  cursor: pointer;
+}

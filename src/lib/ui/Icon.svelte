@@ -28,8 +28,7 @@
         error: "M 12 2 C 6.48 2 2 6.48 2 12 s 4.48 10 10 10 s 10 -4.48 10 -10 S 17.52 2 12 2 z m 1 15 h -2 v -2 h 2 v 2 z m 0 -4 h -2 V 7 h 2 v 6 z",
       }
   
-    let style = `transform: translate(0, 15%) scale(1.5) rotate(${-rotation}deg);`;
-    if (["left", "right"].includes(position)) style += ` position: absolute; ${position}: 10px;`
+    $: style = `transform: translate(0, 15%) scale(1.5) rotate(${-rotation}deg);${["left", "right"].includes(position) ? ` position: absolute; ${position}: 10px;` : ''}`;
   </script>
   
   <svg

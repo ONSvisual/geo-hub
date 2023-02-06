@@ -12,15 +12,12 @@
 	import Headline from "$lib/layout/partial/Headline.svelte";
 	import Subhead from "$lib/layout/partial/Subhead.svelte";
 	import Content from "$lib/layout/Content.svelte";
-	// import Article from "$lib/layout/Article.svelte";
-	// import Section from "$lib/layout/Section.svelte";
 	import Cards from "$lib/layout/Cards.svelte";
 	import Card from "$lib/layout/partial/Card.svelte";
 	import CardFeature from "$lib/layout/partial/CardFeature.svelte";
 	import Select from "$lib/ui/Select.svelte";
   import AreaList from "$lib/ui/AreaList.svelte";
 	import Icon from "$lib/ui/Icon.svelte";
-	// import Notice from "$lib/ui/Notice.svelte";
 	import { Map, MapSource, MapLayer } from "@onsvisual/svelte-maps";
 	import MapTooltip from "@onsvisual/svelte-maps/src/MapTooltip.svelte";
 
@@ -31,7 +28,6 @@
   let firstLoad = true;
 
 	async function pageLoad() {
-    postcode = null;
     let code = $page.url.searchParams.get("code");
 		if (!data.place && code) {
       let newData = await getPlace(code);
@@ -65,6 +61,9 @@
         contentType: "exploratory",
       });
     }
+    
+    postcode = null;
+    childrenExpanded = false;
 	}
 	onMount(pageLoad);
 	afterNavigate(pageLoad);
@@ -72,6 +71,8 @@
 	// DOM Elements
 	let map = null;
 	let hovered = null;
+  let childrenHeight = {};
+  let childrenExpanded = false;
 
 	// Functions etc
 	function navTo(e, options = {}, type = "search") {
@@ -144,7 +145,7 @@
   <hr class="ons-divider"/>
 
   <Cards title="Areas in {["K04", "E92", "W92"].includes(place.typecd) ? '' : 'and around'} {getName(place, "the")}" id="related">
-		<Card colspan={2} rowspan={2} blank>
+		<Card colspan={2} blank>
 			<div style:height="450px">
 				<Map bind:map style="{base}/data/mapstyle.json" location={{bounds: place.bounds}} options={{fitBoundsOptions: {padding: 20}, maxBounds: [-12,47,7,62]}} controls>
 					{#each geoTypes as geo}
@@ -190,7 +191,7 @@
 				</Map>
 			</div>
 		</Card>
-		<Card title="Choose a larger area">
+		<Card title="Choose a larger area" grow>
 			{#if place.parents[0]}
 			{#each [...place.parents].reverse() as parent, i}
 			<span class="parent" style:margin-left="{i === 0 ? 0 : `${(i - 1) * 20}px`}">
@@ -202,7 +203,7 @@
 			<span class="muted">No parent areas</span>
 			{/if}
 		</Card>
-		<Card title="Areas {getName(place, "in")}">
+		<Card colspan={3} title="Areas {getName(place, "in")}">
 			{#if childType}
 			{#if place.childTypes[1]}
 			<select bind:value={childType} style:display="block">
@@ -213,13 +214,18 @@
 			{:else}
 			<span class="type-label">{capitalise(childType.plural)}</span><br/>
 			{/if}
-      {#each place.childTypes as type}
-      <div class:visuallyhidden={type.key !== childType.key}>
+      {#each place.childTypes as type, i}
+      <ul bind:clientHeight={childrenHeight[type.key]} style:max-height="{childrenExpanded ? 'none' : '144px'}" class="list-columns" class:visuallyhidden={type.key !== childType.key}>
         {#each filterChildren(place, type) as child, i}
-        <a href="{base}/{makePath(child.areacd)}" data-sveltekit-noscroll rel="{noIndex.includes(child.areacd.slice(0, 3)) ? "nofollow" : null}">{getName(child)}</a>{i === filterChildren(place, type).length - 1 ? '' : ', '} 
+        <li>
+          <a href="{base}/{makePath(child.areacd)}" data-sveltekit-noscroll rel="{noIndex.includes(child.areacd.slice(0, 3)) ? "nofollow" : null}">{getName(child)}</a>
+        </li>
         {/each}
-      </div>
+      </ul>
       {/each}
+      {#if childrenHeight[childType.key] >= 144}
+      <button class="btn-link" on:click={() => childrenExpanded = !childrenExpanded}><Icon type="chevron" rotation={childrenExpanded ? 90 : -90}/> {childrenExpanded ? "Show fewer" : "Show more"}</button>
+      {/if}
 			{:else}
 			<span class="muted">No areas available within {getName(place)}</span>
 			{/if}
@@ -231,8 +237,5 @@
     <CardFeature title={link.title} url="{parseTemplate(link.url, link.place)}" description="{parseTemplate(link.description, link.place)}" image="{link.image}" bgcolor="{link.bgcolor}"/>
     {/each}
 	</Cards>
-  <!-- <Notice>
-    These links only cover a small selection of the local area statistics produced by the ONS. Read more on our <a href="https://www.ons.gov.uk/help/localstatistics">local statistics page</a>.
-  </Notice> -->
 </Content>
 {/if}

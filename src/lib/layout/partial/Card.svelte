@@ -3,6 +3,7 @@
 
   export let colspan = 1; // 1, 2 or 3
   export let rowspan = 1;
+  export let grow = false;
   export let title = null;
   export let links = null;
   export let blank = false;
@@ -10,7 +11,7 @@
   const { cols } = getContext("tiles");
 </script>
 
-<article class:blank class="{!blank ? 'tile tile__content' : ''}" style:grid-column="span {colspan == 1 ? 1 : colspan > $cols ? $cols : colspan}" style:grid-row="span {rowspan}">
+<article class:blank class="{!blank ? 'tile tile__content' : ''}" style:grid-column="span {grow && $cols < 3 ? $cols : colspan == 1 ? 1 : colspan > $cols ? $cols : colspan}" style:grid-column-end={grow ? $cols + 1 : null}>
   {#if title}
   <header class="margin-top--1">
     <h3 class="margin-top--0 margin-right--0 margin-bottom--0 margin-left--0">
@@ -36,7 +37,7 @@
 
 <style>
   article {
-    overflow: visible;
+    overflow: none;
   }
   h3 {
     font-size: 1.3rem;
