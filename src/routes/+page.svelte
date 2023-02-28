@@ -12,7 +12,6 @@
 	import Select from "$lib/ui/Select.svelte";
   import AreaList from "$lib/ui/AreaList.svelte";
 	import Icon from "$lib/ui/Icon.svelte";
-	// import Notice from "$lib/ui/Notice.svelte";
 
   let postcode = null;
 
@@ -69,9 +68,10 @@
   <AreaList {postcode} on:clear={() => postcode = null}/>
   {/if}
 
-  <!-- <Notice>
-    The pages in this section link to only a small selection of the local area statistics produced by the ONS. Read more on our <a href="https://www.ons.gov.uk/help/localstatistics">local statistics page</a>.
-  </Notice> -->
+  <h2 class="heading-bold heading-overline">Labour market and population data</h2>
+  <p>
+    Some specialist data are also published on Nomis, an Office for National Statistics service. Find out how to get <a href="https://www.ons.gov.uk/help/localstatistics">labour market and population data for areas within the UK</a>.
+  </p>
 
   <h2 class="heading-bold">Other countries in the UK</h2>
   <p>

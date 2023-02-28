@@ -63,11 +63,15 @@ select:focus {
 }
 .heading-bold {
   display: block;
+  margin: 20px 0 10px;
+  padding: 0;
+  font-size: 1.4em;
+  font-weight: bold;
+}
+.heading-overline {
   border-top: 1px solid black;
   margin: 50px 0 10px;
   padding: 20px 0 0;
-  font-size: 1.4em;
-  font-weight: bold;
 }
 ul.ons-list {
   list-style: none;
