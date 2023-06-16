@@ -3,22 +3,32 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<meta http-equiv="content-security-policy" content="">
-		<link rel="modulepreload" href="/geo-hub/_app/immutable/start-d0665a13.js">
-		<link rel="modulepreload" href="/geo-hub/_app/immutable/chunks/singletons-39e1e026.js">
-		<link rel="modulepreload" href="/geo-hub/_app/immutable/chunks/paths-b4419565.js">
+		
+		<link rel="modulepreload" href="/geo-hub/_app/immutable/entry/start.399b944d.js">
+		<link rel="modulepreload" href="/geo-hub/_app/immutable/chunks/index.7c0f8463.js">
+		<link rel="modulepreload" href="/geo-hub/_app/immutable/chunks/singletons.e5e0a1e2.js">
+		<link rel="modulepreload" href="/geo-hub/_app/immutable/entry/app.f794aec1.js">
 	</head>
 	<body>
 		<div id="svelte">
-		<script type="module" data-sveltekit-hydrate="45h">
-			import { start } from "/geo-hub/_app/immutable/start-d0665a13.js";
+			<script>
+				{
+					__sveltekit_1r195sg = {
+						assets: "/geo-hub",
+						base: "/geo-hub",
+						env: {"PUBLIC_APP_PATH":""}
+					};
 
-			start({
-				env: {"PUBLIC_APP_PATH":""},
-				paths: {"base":"/geo-hub","assets":"/geo-hub"},
-				target: document.querySelector('[data-sveltekit-hydrate="45h"]').parentNode,
-				version: "1675706811748"
-			});
-		</script></div>
+					const element = document.currentScript.parentElement;
+
+					Promise.all([
+						import("/geo-hub/_app/immutable/entry/start.399b944d.js"),
+						import("/geo-hub/_app/immutable/entry/app.f794aec1.js")
+					]).then(([kit, app]) => {
+						kit.start(app, element);
+					});
+				}
+			</script>
+		</div>
 	</body>
 </html>
