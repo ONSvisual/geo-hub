@@ -81,7 +81,7 @@ export function getParent(geocodes, place) {
   return null;
 }
 
-const validYear = (place, year) => !year || ((!place.start || place.start < year) && (!place.end || place.end > year));
+// const validYear = (place, year) => !year || ((!place.start || place.start < year) && (!place.end || place.end > year));
 
 export function filterLinks(links, place) {
   let thislinks = [];

@@ -22,7 +22,7 @@
 	import MapTooltip from "@onsvisual/svelte-maps/src/MapTooltip.svelte";
 
 	export let data;
-	let { place, type, links } = data;
+	let { place, type, links, geometry } = data;
 	let childType = place?.childTypes[0];
   let postcode;
   let firstLoad = true;
@@ -33,9 +33,11 @@
       let newData = await getPlace(code);
       type = newData.type;
       place = newData.place;
+			geometry = newData.geometry;
     } else {
       place = data.place;
       type = data.type;
+			geometry = data.geometry;
     }
     if (!place) {
 			goto(`${base}/`);
@@ -135,6 +137,8 @@
     {place.end ? "was" : "is"} {addArticle(place.typenm)} <a href="{base}/{makePath(place.parents[0].areacd)}" data-sveltekit-noscroll>{getName(place.parents[0], "in")}</a>.
 		{#if place.successor?.areacd}
 		It was replaced by <a href="{base}/{makePath(place.successor.areacd)}" data-sveltekit-noscroll>{getName(place.successor, "the")}</a> in {place.end + 1}.
+		{:else if place.end}
+		It ceased to be an official geography in {place.end + 1}.
 		{/if}
 		{/if}
 	</p>
@@ -194,6 +198,17 @@
 						{/each}
 					</MapSource>
 					{/each}
+					{#if place.end && geometry}
+					<MapSource
+						id="place"
+						type="geojson"
+						data={geometry}>
+						<MapLayer
+							id="place-line"
+							type="line"
+							paint={{'line-color': 'rgb(17,140,123)', 'line-width': 2}}></MapLayer>
+					</MapSource>
+					{/if}
 				</Map>
 			</div>
 		</Card>
