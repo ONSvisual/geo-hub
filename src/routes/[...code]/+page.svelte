@@ -154,7 +154,7 @@
   <Cards title="Areas in {["K02", "E92", "N92", "S92", "W92"].includes(place.typecd) ? '' : 'and around'} {getName(place, "the")}" id="related">
 		<Card colspan={2} blank>
 			<div style:height="450px">
-				<Map bind:map style="{base}/data/mapstyle.json" location={{bounds: place.bounds}} options={{fitBoundsOptions: {padding: 20}, maxBounds: [-18, 48, 11, 62]}} controls>
+				<Map bind:map style="{base}/data/mapstyle.json" location={{bounds: place.bounds}} options={{fitBoundsOptions: {padding: 20}, maxBounds: [-19, 48, 12, 62]}} controls>
 					{#each mapSources as s}
 					<MapSource
 						id={s.id}
@@ -230,29 +230,40 @@
 		</Card>
 		<Card colspan={3} title="Areas {getName(place, "in")}">
 			{#if childType}
-			{#if place.childTypes[1]}
-			<select bind:value={childType} style:display="block">
-				{#each place.childTypes as type}
-				<option value={type}>{capitalise(type.plural)}</option>
+			<div class="tabs">
+				<div class="tablist-container">
+					<div role="tablist" aria-label="Select child area type">
+						{#each place.childTypes as type}
+						<button
+							role="tab"
+							aria-selected="true"
+							aria-controls="child-{type.key}"
+							id="tab-{type.key}"
+							tabindex="0"
+							class:btn-active={childType.key === type.key}
+							on:click={() => childType = type}>
+							{capitalise(type.plural)}
+						</button>
+						{/each}
+					</div>
+				</div>
+				{#each place.childTypes as type, i}
+				<div id="panel-{type.key}" role="tabpanel" tabindex="0" aria-labelledby="tab-1" class:visuallyhidden={type.key !== childType.key}>
+					<ul bind:clientHeight={childrenHeight[type.key]} style:max-height="{childrenExpanded ? 'none' : '144px'}" class="list-columns">
+						{#each filterChildren(place, type) as child, i}
+						<li>
+							<a href="{base}/{makePath(child.areacd)}" data-sveltekit-noscroll rel="{noIndex.includes(child.areacd.slice(0, 3)) ? "nofollow" : null}">{getName(child)}</a>
+						</li>
+						{/each}
+					</ul>
+				</div>
 				{/each}
-			</select>
+				{#if childrenHeight[childType.key] >= 144}
+				<button class="btn-link" on:click={() => childrenExpanded = !childrenExpanded}><Icon type="chevron" rotation={childrenExpanded ? 90 : -90}/> {childrenExpanded ? "Show fewer" : "Show more"}</button>
+				{/if}
+			</div>
 			{:else}
-			<span class="type-label">{capitalise(childType.plural)}</span><br/>
-			{/if}
-      {#each place.childTypes as type, i}
-      <ul bind:clientHeight={childrenHeight[type.key]} style:max-height="{childrenExpanded ? 'none' : '144px'}" class="list-columns" class:visuallyhidden={type.key !== childType.key}>
-        {#each filterChildren(place, type) as child, i}
-        <li>
-          <a href="{base}/{makePath(child.areacd)}" data-sveltekit-noscroll rel="{noIndex.includes(child.areacd.slice(0, 3)) ? "nofollow" : null}">{getName(child)}</a>
-        </li>
-        {/each}
-      </ul>
-      {/each}
-      {#if childrenHeight[childType.key] >= 144}
-      <button class="btn-link" on:click={() => childrenExpanded = !childrenExpanded}><Icon type="chevron" rotation={childrenExpanded ? 90 : -90}/> {childrenExpanded ? "Show fewer" : "Show more"}</button>
-      {/if}
-			{:else}
-			<span class="muted">No areas available within {getName(place)}</span>
+			<span class="muted">No areas available within {getName(place, "the")}</span>
 			{/if}
 		</Card>
 	</Cards>
