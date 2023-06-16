@@ -26,7 +26,7 @@
     {/if}
   </h2>
   <p class="tile__text-description margin-top--0 margin-bottom--0">
-    {description}
+    {@html description}
   </p>
 </article>
 
@@ -51,5 +51,6 @@
   .tile__highlighted-content-image {
     width: auto !important;
     max-width: 100%;
+    height: 150px;
   }
 </style>

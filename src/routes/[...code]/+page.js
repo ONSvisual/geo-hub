@@ -7,9 +7,9 @@ export async function load({ fetch, params, parent }) {
 
 	let code = params.code.split("/")[0];
 
-	let { place, type } = await getPlace(code, fetch);
+	let { place, type, geometry } = await getPlace(code, fetch);
 
   if (building) console.log(code);
 	
-  return { place, type, links };
+  return { place, type, geometry, links };
 }

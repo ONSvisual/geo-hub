@@ -1,13 +1,27 @@
 <script>
 	import { onMount, createEventDispatcher } from "svelte";
   import { base } from "$app/paths";
-  import { geoTypes, geoReverseLookup, geoCodesLookup, geoNames } from "$lib/config";
+  import { geoTypes, geoCodesLookup, geoNames } from "$lib/config";
   import { getData, capitalise } from "$lib/utils";
 	import Select from "svelte-select";
 
 	const searchIcon = `<svg viewBox="0 0 20 20" fill-rule="evenodd"><path d="M0,8a8,8,0,1,0,16,0a8,8,0,1,0,-16,0ZM3,8a5,5,0,1,0,10,0a5,5,0,1,0,-10,0Z"/><path d="M18,20L20,18L14,12L12,14Z"/></svg>`;
 	const chevronIcon = `<svg viewBox="0 0 20 20"><path d="M1,6L19,6L10,15Z"/></svg>`;
 	const dispatch = createEventDispatcher();
+
+	export const regionReverseLookup = {
+		"England": "E92000001",
+		"Wales": "W92000004",
+		"North East": "E12000001",
+		"North West": "E12000002",
+		"Yorkshire and The Humber": "E12000003",
+		"East Midlands": "E12000004",
+		"West Midlands": "E12000005",
+		"East of England": "E12000006",
+		"London": "E12000007",
+		"South East": "E12000008",
+		"South West": "E12000009",
+	};
 
 	export let id = "";
 	export let container = undefined;
@@ -49,7 +63,7 @@
         geoTypes.filter(g => g.pcio).forEach(g => {
           let name = json.result[g.pcio];
           if (name && !name.includes('unparished')) {
-            let code = json.result.codes[g.pcio] ? json.result.codes[g.pcio] : geoReverseLookup[name];
+            let code = json.result.codes[g.pcio] ? json.result.codes[g.pcio] : regionReverseLookup[name];
             places.push({areacd: code, areanm: name, typenm: g.label.split("/")[0]});
           }
         });
@@ -103,7 +117,7 @@
     places.forEach(d => lookup[d.areacd] = d);
     places.forEach(d => {
       let type = d.areacd.slice(0, 3);
-      d.group = type === "K04" ? "" :
+      d.group = type === "K02" ? "" :
         d.parent ? `${capitalise(getTypeLabel(type))} in ${lookup[d.parent].areanm}` :
         capitalise(getTypeLabel(type));
     });

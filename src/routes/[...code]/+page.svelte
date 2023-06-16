@@ -3,10 +3,10 @@
 	import { afterNavigate, goto } from "$app/navigation";
 	import { base } from "$app/paths";
 	import { page } from "$app/stores";
-	import { assets, geoTypes, geoCodesLookup, noIndex } from "$lib/config";
+	import { assets, geoTypes, geoCodesLookup, mapSources, noIndex } from "$lib/config";
 	import { capitalise, makeGeoJSON, getName, filterLinks, parseTemplate, addArticle, getPlace, makePath, filterChildren } from "$lib/utils";
   import { analyticsEvent } from "$lib/layout/AnalyticsBanner.svelte";
-	import topojson from "$lib/data/ew-ctry-rgn.json";
+	import topojson from "$lib/data/uk-ctry-rgn.json";
 
 	import Titleblock from "$lib/layout/Titleblock.svelte";
 	import Headline from "$lib/layout/partial/Headline.svelte";
@@ -125,14 +125,17 @@
 
 <Content>
   <p class="subtitle" style:max-width="768px">
-		{#if place.areacd != "K04000001"}
+		{#if place.areacd !== "K02000001"}
 		<strong>{capitalise(getName(place, "the"))}</strong>
       {#if ["E02", "W02"].includes(place.typecd)}
       ({place.areacd}), also known as {place.areanm},
       {:else}
       ({place.areacd})
       {/if}
-    is {addArticle(place.typenm)} <a href="{base}/{makePath(place.parents[0].areacd)}" data-sveltekit-noscroll>{getName(place.parents[0], "in")}</a>.
+    {place.end ? "was" : "is"} {addArticle(place.typenm)} <a href="{base}/{makePath(place.parents[0].areacd)}" data-sveltekit-noscroll>{getName(place.parents[0], "in")}</a>.
+		{#if place.successor?.areacd}
+		It was replaced by <a href="{base}/{makePath(place.successor.areacd)}" data-sveltekit-noscroll>{getName(place.successor, "the")}</a> in {place.end + 1}.
+		{/if}
 		{/if}
 	</p>
   <label for="search" class="lbl-search">
@@ -144,48 +147,51 @@
   {/if}
   <hr class="ons-divider"/>
 
-  <Cards title="Areas in {["K04", "E92", "W92"].includes(place.typecd) ? '' : 'and around'} {getName(place, "the")}" id="related">
+  <Cards title="Areas in {["K02", "E92", "N92", "S92", "W92"].includes(place.typecd) ? '' : 'and around'} {getName(place, "the")}" id="related">
 		<Card colspan={2} blank>
 			<div style:height="450px">
-				<Map bind:map style="{base}/data/mapstyle.json" location={{bounds: place.bounds}} options={{fitBoundsOptions: {padding: 20}, maxBounds: [-12,47,7,62]}} controls>
-					{#each geoTypes as geo}
+				<Map bind:map style="{base}/data/mapstyle.json" location={{bounds: place.bounds}} options={{fitBoundsOptions: {padding: 20}, maxBounds: [-18, 48, 11, 62]}} controls>
+					{#each mapSources as s}
 					<MapSource
-						id={geo.key}
-						type={geo.source.type}
-						url={geo.source.type === "vector" ? geo.source.url : null}
-						data={geo.source.type === "geojson" ? makeGeoJSON(topojson, geo.key) : null}
-						layer={geo.source.type === "vector" ? geo.key : null} promoteId={geo.source.promoteId}
-						minzoom={geo.source.minzoom ? geo.source.minzoom : 0} maxzoom={12}
-						props={geo.source.type === "vector" ? {bounds: [-6.3603,49.88234,1.76357,55.8112]} : {}}>
+						id={s.id}
+						type={s.type}
+						url={s.type === "vector" ? s.url : null}
+						data={s.type === "geojson" ? makeGeoJSON(topojson, s.id) : null}
+						layer={s.type === "vector" ? s.layer : null} promoteId="areacd"
+						minzoom={s.minzoom ? s.minzoom : 0} maxzoom={12}
+						props={s.type === "NA" ? {bounds: [-6.3603,49.88234,1.76357,55.8112]} : {}}>
+						{#each s.layers as l}
 						<MapLayer
-							id="{geo.key}-fill"
+							id="{l.key}-fill"
 							type="fill"
 							paint={{
-								'fill-color': geo.key === type.key ? ['case', ['==', ['feature-state', 'selected'], true], 'rgb(17,140,123)', 'grey'] : 'rgb(17,140,123)',
+								'fill-color': l.key === type.key ? ['case', ['==', ['feature-state', 'selected'], true], 'rgb(17,140,123)', 'grey'] : 'rgb(17,140,123)',
 								'fill-opacity': ['case', ['==', ['feature-state', 'hovered'], true], 0.3, 0.1]
 							}}
-							visible={geo.key === type.key || geo.key === childType?.key}
+							visible={l.key === type.key || l.key === childType?.key}
 							filter={!childType ? null :
-								geo.key === type.key ? ["!=", "areacd", place.areacd] : 
+								l.key === type.key && l.filter ? ["all", ...l.filter.slice(1), ["!", ["==", ["get", "areacd"], place.areacd]]] :
+								l.key === type.key ? ["!", ["==", ["get", "areacd"], place.areacd]] : 
 								["in", "areacd", ...place.children.map(d => d.areacd)]}
 							hover on:hover={(e) => hovered = e.detail.feature} select selected={place.areacd}
 							on:select={mapSelect}>
 							<MapTooltip content={hovered ? getName(hovered.properties) : ''}/>
 						</MapLayer>
 						<MapLayer
-							id="{geo.key}-line"
+							id="{l.key}-line"
 							type="line"
-							paint={{'line-color': geo.key === type.key ? 'grey' : 'rgb(17,140,123)', 'line-width': 1}}
-							visible={geo.key === type.key || geo.key === childType?.key}
-							filter={geo.key === type.key ?
-								["!=", "areacd", place.areacd] : 
+							paint={{'line-color': l.key === type.key ? 'grey' : 'rgb(17,140,123)', 'line-width': 1}}
+							visible={l.key === type.key || l.key === childType?.key}
+							filter={l.key === type.key && l.filter ? ["all", ...l.filter.slice(1), ["!", ["==", ["get", "areacd"], place.areacd]]] :
+								l.key === type.key ? ["!", ["==", ["get", "areacd"], place.areacd]] : 
 								["in", "areacd", ...place.children.map(d => d.areacd)]}/>
 						<MapLayer
-							id="{geo.key}-active"
+							id="{l.key}-active"
 							type="line"
 							paint={{'line-color': 'rgb(17,140,123)', 'line-width': 2}}
-							visible={geo.key === type.key}
+							visible={l.key === type.key}
 							filter={["==", "areacd", place.areacd]}/>
+						{/each}
 					</MapSource>
 					{/each}
 				</Map>
@@ -199,6 +205,10 @@
 				<a href="{base}/{makePath(parent.areacd)}" data-sveltekit-noscroll>{getName(parent)}</a>
 			</span>
 			{/each}
+			<span class="parent" style:margin-left="{`${(place.parents.length) * 20}px`}">
+				{#if place.parents[0]}<Icon type="subdir"/>{/if}
+				<span style:color="#555">{getName(place)}</span>
+			</span>
 			{:else}
 			<span class="muted">No parent areas</span>
 			{/if}
