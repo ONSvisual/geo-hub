@@ -44,13 +44,19 @@
 	export let darkMode = false;
 	export let borderColor = darkMode ? "white" : "#206095";
 
+	const startsWithFilter = (str, filter) => str.toLowerCase().startsWith(filter.toLowerCase());
+	const filterSort = (a, b) => startsWithFilter(a.areanm, filterText) && startsWithFilter(b.areanm, filterText) ? 0 :
+		!startsWithFilter(a.areanm, filterText) && startsWithFilter(b.areanm, filterText) ? 1 :
+		startsWithFilter(a.areanm, filterText) && !startsWithFilter(b.areanm, filterText) ? -1 : 0;
+
 	export async function loadOptions(filterText) {
 		if (filterText.length > 2 && /\d/.test(filterText)) {
 			let res = await fetch(`https://api.postcodes.io/postcodes/${filterText}/autocomplete`);
 			let json = await res.json();
 			return json.result.map(d => ({areacd: d, areanm: d, group: "", postcode: true}));
 		} else if (filterText.length > 2) {
-			return items.filter(p => p.areanm.toLowerCase().slice(0, filterText.length) == filterText.toLowerCase());
+			return items.filter(p => p.areanm.match(new RegExp(`\\b${filterText}`, 'i')))
+				.sort(filterSort)
 		}
 		return [];
 	}
@@ -99,7 +105,7 @@
 	$: noOptionsMessage = isWaiting ? "Loading..." : mode == "search" && filterText.length < 3 ? "Enter 3 or more characters for suggestions" : `No results match ${filterText}`;
 	$: itemFilter = (Array.isArray(value) && value.length >= maxSelected) || mode == "search" && filterText.length < 3
 	? (label, filterText, option) => false
-	: (label, filterText, option) => `${label}`.split("<")[0].toLowerCase().slice(0, filterText.length) == filterText.toLowerCase();
+	: (label, filterText, option) => true;
 	
 	let el;
   let items;
@@ -118,7 +124,7 @@
     places.forEach(d => {
       let type = d.areacd.slice(0, 3);
       d.group = type === "K02" ? "" :
-        d.parent ? `${capitalise(getTypeLabel(type))} in ${lookup[d.parent].areanm}` :
+        d.parentcd ? `${capitalise(getTypeLabel(type))} in ${lookup[d.parentcd].areanm}` :
         capitalise(getTypeLabel(type));
     });
     return places;

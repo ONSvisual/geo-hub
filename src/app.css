@@ -155,17 +155,17 @@ ul.list-columns > li {
 }
 button[role=tab] {
   border: 0;
-  border-bottom: 1px solid rgb(34, 34, 34);
   border-radius: 0;
   border-top-left-radius: 3px;
   border-top-right-radius: 3px;
   font-size: 16px;
   padding: 10px 12px;
-  margin-right: 7.2px;
+  margin: 0 4px;
   background-color: rgb(226, 226, 227);
   text-decoration: underline;
   cursor: pointer;
   transform: translateY(1px);
+  mix-blend-mode: multiply;
 }
 button[role=tab]:focus {
   outline: 4px solid orange;
@@ -176,6 +176,7 @@ button[role=tab].btn-active {
   background-color: rgb(245, 245, 246);
   text-decoration: none;
   cursor: auto;
+  mix-blend-mode: normal;
 }
 div.tablist-container {
   max-width: 100%;

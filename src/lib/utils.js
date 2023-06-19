@@ -147,7 +147,9 @@ export function makePath(code) {
 }
 
 export function filterChildren(place, type) {
-  return place.children.filter(c => type.codes.includes(c.areacd.slice(0, 3)));
+  const labelKey = type.key === "msoa" ? "hclnm" : type.key  === "oa" ? "areacd" : "areanm";
+  return place.children.filter(c => type.codes.includes(c.areacd.slice(0, 3)))
+    .sort((a, b) => a[labelKey].localeCompare(b[labelKey]));
 }
 
 export function makeGeoJSON(topojson, layer) {
