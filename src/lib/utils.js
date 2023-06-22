@@ -75,7 +75,6 @@ export function getParent(link, place) {
     areacd: "K04000001",
     areanm: "England and Wales",
   });
-  console.log(parents);
   for (const parent of parents) {
     let typecd = parent.areacd.slice(0, 3);
     if (link.geocodes.includes(typecd) && validYear(parent, link.year)) {
@@ -87,7 +86,6 @@ export function getParent(link, place) {
 }
 
 export function filterLinks(links, place) {
-  console.log(links, place);
   let thislinks = [];
   let parentlinks = [];
   links.forEach(l => {
