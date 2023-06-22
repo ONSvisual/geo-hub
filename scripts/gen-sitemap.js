@@ -1,6 +1,6 @@
 import path from "path";
 import fs from "fs";
-import { assets } from "./src/lib/config.js";
+import { assets } from "../src/lib/config.js";
 
 function throughDirectory(dir) {
     fs.readdirSync(dir).forEach(file => {

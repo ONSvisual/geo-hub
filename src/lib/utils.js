@@ -1,11 +1,13 @@
-import { csvParse, autoType } from "d3-dsv";
+import * as d3 from "d3-dsv";
 import { feature } from "topojson-client";
-import { cdnUrl, geoCodesLookup, geoTypesLookup, geoNames, geoTypes } from "$lib/config";
+import { cdnUrl, geoCodesLookup, geoTypesLookup, geoNames, geoTypes, noIndex } from "$lib/config";
+
+const csvParse = (str, row = d3.autoType) => d3.csvParse(str.replace(/\uFEFF/, ""), row);
 
 export async function getData(url, fetch = window.fetch) {
   let res = await fetch(url);
   let str = await res.text();
-  let data = csvParse(str, autoType);
+  let data = csvParse(str);
   let cols = data.columns.filter(c => {
     data[0][c] && String(data[0][c]).includes("|");
   });
@@ -65,15 +67,18 @@ export function getName(props, context = null) {
   return name;
 }
 
-export function getParent(geocodes, place) {
+const validYear = (place, year) => !year || ((!place.start || year > place.start) && (!place.end || year <= place.end));
+
+export function getParent(link, place) {
   const parents = [...place.parents];
   if (["E", "W"].includes(place.areacd[0])) parents.push({
     areacd: "K04000001",
     areanm: "England and Wales",
   });
+  console.log(parents);
   for (const parent of parents) {
     let typecd = parent.areacd.slice(0, 3);
-    if (geocodes.includes(typecd)) {
+    if (link.geocodes.includes(typecd) && validYear(parent, link.year)) {
       parent.groupcd = geoCodesLookup[typecd]?.key ? geoCodesLookup[typecd].key : "ew";
       return parent;
     };
@@ -81,20 +86,19 @@ export function getParent(geocodes, place) {
   return null;
 }
 
-// const validYear = (place, year) => !year || ((!place.start || place.start < year) && (!place.end || place.end > year));
-
 export function filterLinks(links, place) {
+  console.log(links, place);
   let thislinks = [];
   let parentlinks = [];
   links.forEach(l => {
-    let parent = getParent(l.geocodes, place);
+    let parent = getParent(l, place);
     if (
       l.geocodes.includes(place.typecd)
-      // && validYear(place, l.year)
+      && validYear(place, l.year)
     ) {
       thislinks.push({...l, place});
     } else if (parent) {
-      parentlinks.push({...l, place: getParent(l.geocodes, place)});
+      parentlinks.push({...l, place: getParent(l, place)});
     }
   });
   return [...thislinks, ...parentlinks];
@@ -134,12 +138,7 @@ export function addArticle(str) {
 }
 
 export function makePath(code) {
-  if ([
-    "K02", "E92", "N92", "S92", "W92",
-    "E10", "E12", "E47",
-    "E06", "E07", "E08", "E09", "N09", "S12", "W06",
-    "E14", "N06", "S14", "W07"
-  ].includes(code.slice(0, 3))) {
+  if (!noIndex.includes(code.slice(0, 3))) {
     return code + "/";
   } else {
     return "area/?code=" + code;

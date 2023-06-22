@@ -188,3 +188,16 @@ div[role=tablist] {
   border-bottom: 1px solid rgb(34, 34, 34);
   margin: 4px 0 12px;
 }
+span.title-tag {
+  display: inline-block;
+  font-size: 18px;
+  padding: 4px 8px;
+  margin: -4px 0;
+  border-radius: 4px;
+  transform: translateY(-4px);
+}
+.bg-warn {
+  background-color: #fa6401;
+  color: white;
+  font-weight: bold;
+}

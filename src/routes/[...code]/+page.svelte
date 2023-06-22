@@ -3,8 +3,9 @@
 	import { afterNavigate, goto } from "$app/navigation";
 	import { base } from "$app/paths";
 	import { page } from "$app/stores";
+	import { capitalise, aAn, getName, toList} from "@onsvisual/robo-utils";
 	import { assets, geoTypes, geoCodesLookup, mapSources, noIndex } from "$lib/config";
-	import { capitalise, makeGeoJSON, getName, filterLinks, parseTemplate, addArticle, getPlace, makePath, filterChildren } from "$lib/utils";
+	import { makeGeoJSON, filterLinks, parseTemplate, getPlace, makePath, filterChildren } from "$lib/utils";
   import { analyticsEvent } from "$lib/layout/AnalyticsBanner.svelte";
 	import topojson from "$lib/data/uk-ctry-rgn.json";
 
@@ -98,6 +99,8 @@
     e.detail.areanm = getName(place);
 		navTo(e, {noScroll: true}, "map");
 	}
+
+	$: productLinks = filterLinks(links, place);
 </script>
 
 <svelte:head>
@@ -121,7 +124,10 @@
 {#if place}
 <Titleblock
 	breadcrumb="{[{label: 'Home', url: '/', refresh: true}, ...[...place.parents].reverse().map(p => ({label: getName(p), url: `${base}/${makePath(p.areacd)}`})), {label: getName(place)}]}">
-	<Headline>{getName(place)}</Headline>
+	<Headline>
+		{getName(place)}
+		{#if place.end}<span class="title-tag bg-warn">Inactive</span>{/if}
+	</Headline>
   <Subhead>Facts and figures about people living {getName(place, "in")}.</Subhead>
 </Titleblock>
 
@@ -134,9 +140,15 @@
       {:else}
       ({place.areacd})
       {/if}
-    {place.end ? "was" : "is"} {addArticle(place.typenm)} <a href="{base}/{makePath(place.parents[0].areacd)}" data-sveltekit-noscroll>{getName(place.parents[0], "in")}</a>.
-		{#if place.successor?.areacd}
-		It was replaced by <a href="{base}/{makePath(place.successor.areacd)}" data-sveltekit-noscroll>{getName(place.successor, "the")}</a> in {place.end + 1}.
+    {place.end ? "was" : "is"} {aAn(place.typenm)} <a href="{base}/{makePath(place.parents[0].areacd)}" data-sveltekit-noscroll>{getName(place.parents[0], "in")}</a>.
+		{#if place.start && place.replaces?.[0]?.areacd}
+		In {place.start}, it replaced
+			{#each place.replaces as rep, i}
+			<a href="{base}/{makePath(rep.areacd)}" data-sveltekit-noscroll>{getName(rep, "the")}</a>{i === place.replaces.length - 2 ? " and " : ", "}
+			{/each}.
+		{/if}
+		{#if place.end && place.successor?.areacd}
+		In {place.end + 1}, it was replaced by <a href="{base}/{makePath(place.successor.areacd)}" data-sveltekit-noscroll>{getName(place.successor, "the")}</a> ({place.successor.areacd}).
 		{:else if place.end}
 		It ceased to be an official geography in {place.end + 1}.
 		{/if}
@@ -267,11 +279,12 @@
 			{/if}
 		</Card>
 	</Cards>
-
+	{#if productLinks[0]}
 	<Cards title="Facts and figures for {getName(place, "the")}" id="interactive">
-    {#each filterLinks(links, place) as link}
+    {#each productLinks as link}
     <CardFeature title={link.title} url="{parseTemplate(link.url, link.place)}" description="{parseTemplate(link.description, link.place)}" image="{link.image}" bgcolor="{link.bgcolor}"/>
     {/each}
 	</Cards>
+	{/if}
 </Content>
 {/if}

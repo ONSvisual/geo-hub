@@ -54,9 +54,6 @@
   <p>
     You can find information about your area, local authority, ward, parish or parliamentary constituency.
   </p>
-  <p>
-    If you do not know the name of the area or postcode you can start your search from either <a href="{base}/E92000001/">England</a>, <a href="{base}/W92000004/">Wales</a>, <a href="{base}/S92000003/">Scotland</a> or <a href="{base}/N92000002/">Northern Ireland</a>.
-  </p>
 
   <label for="search" class="lbl-search">
     <strong>Search by area name or postcode</strong><br/>
@@ -68,7 +65,11 @@
   <AreaList {postcode} on:clear={() => postcode = null}/>
   {/if}
 
-  <h2 class="heading-bold heading-overline" style:margin-top="40px">Labour market and population data</h2>
+  <p>
+    If you do not know the name of the area or postcode you can start your search from <a href="{base}/E92000001/">England</a>, <a href="{base}/W92000004/">Wales</a>, <a href="{base}/S92000003/">Scotland</a> or <a href="{base}/N92000002/">Northern Ireland</a>.
+  </p>
+
+  <h2 class="heading-bold heading-overline">Labour market and population data</h2>
   <p>
     Some specialist data are also published on Nomis, an Office for National Statistics service. Find out how to get <a href="https://www.ons.gov.uk/help/localstatistics">labour market and population data for areas within the UK</a>.
   </p>
