@@ -1,13 +1,27 @@
 <script>
 	import { onMount, createEventDispatcher } from "svelte";
   import { base } from "$app/paths";
-  import { geoTypes, geoReverseLookup, geoCodesLookup, geoNames } from "$lib/config";
+  import { geoTypes, geoCodesLookup, geoNames } from "$lib/config";
   import { getData, capitalise } from "$lib/utils";
 	import Select from "svelte-select";
 
 	const searchIcon = `<svg viewBox="0 0 20 20" fill-rule="evenodd"><path d="M0,8a8,8,0,1,0,16,0a8,8,0,1,0,-16,0ZM3,8a5,5,0,1,0,10,0a5,5,0,1,0,-10,0Z"/><path d="M18,20L20,18L14,12L12,14Z"/></svg>`;
 	const chevronIcon = `<svg viewBox="0 0 20 20"><path d="M1,6L19,6L10,15Z"/></svg>`;
 	const dispatch = createEventDispatcher();
+
+	export const regionReverseLookup = {
+		"England": "E92000001",
+		"Wales": "W92000004",
+		"North East": "E12000001",
+		"North West": "E12000002",
+		"Yorkshire and The Humber": "E12000003",
+		"East Midlands": "E12000004",
+		"West Midlands": "E12000005",
+		"East of England": "E12000006",
+		"London": "E12000007",
+		"South East": "E12000008",
+		"South West": "E12000009",
+	};
 
 	export let id = "";
 	export let container = undefined;
@@ -30,13 +44,19 @@
 	export let darkMode = false;
 	export let borderColor = darkMode ? "white" : "#206095";
 
+	const startsWithFilter = (str, filter) => str.toLowerCase().startsWith(filter.toLowerCase());
+	const filterSort = (a, b) => startsWithFilter(a.areanm, filterText) && startsWithFilter(b.areanm, filterText) ? 0 :
+		!startsWithFilter(a.areanm, filterText) && startsWithFilter(b.areanm, filterText) ? 1 :
+		startsWithFilter(a.areanm, filterText) && !startsWithFilter(b.areanm, filterText) ? -1 : 0;
+
 	export async function loadOptions(filterText) {
 		if (filterText.length > 2 && /\d/.test(filterText)) {
 			let res = await fetch(`https://api.postcodes.io/postcodes/${filterText}/autocomplete`);
 			let json = await res.json();
 			return json.result.map(d => ({areacd: d, areanm: d, group: "", postcode: true}));
 		} else if (filterText.length > 2) {
-			return items.filter(p => p.areanm.toLowerCase().slice(0, filterText.length) == filterText.toLowerCase());
+			return items.filter(p => p.areanm.match(new RegExp(`\\b${filterText}`, 'i')))
+				.sort(filterSort)
 		}
 		return [];
 	}
@@ -49,7 +69,7 @@
         geoTypes.filter(g => g.pcio).forEach(g => {
           let name = json.result[g.pcio];
           if (name && !name.includes('unparished')) {
-            let code = json.result.codes[g.pcio] ? json.result.codes[g.pcio] : geoReverseLookup[name];
+            let code = json.result.codes[g.pcio] ? json.result.codes[g.pcio] : regionReverseLookup[name];
             places.push({areacd: code, areanm: name, typenm: g.label.split("/")[0]});
           }
         });
@@ -85,7 +105,7 @@
 	$: noOptionsMessage = isWaiting ? "Loading..." : mode == "search" && filterText.length < 3 ? "Enter 3 or more characters for suggestions" : `No results match ${filterText}`;
 	$: itemFilter = (Array.isArray(value) && value.length >= maxSelected) || mode == "search" && filterText.length < 3
 	? (label, filterText, option) => false
-	: (label, filterText, option) => `${label}`.split("<")[0].toLowerCase().slice(0, filterText.length) == filterText.toLowerCase();
+	: (label, filterText, option) => true;
 	
 	let el;
   let items;
@@ -103,8 +123,8 @@
     places.forEach(d => lookup[d.areacd] = d);
     places.forEach(d => {
       let type = d.areacd.slice(0, 3);
-      d.group = type === "K04" ? "" :
-        d.parent ? `${capitalise(getTypeLabel(type))} in ${lookup[d.parent].areanm}` :
+      d.group = type === "K02" ? "" :
+        d.parentcd ? `${capitalise(getTypeLabel(type))} in ${lookup[d.parentcd].areanm}` :
         capitalise(getTypeLabel(type));
     });
     return places;

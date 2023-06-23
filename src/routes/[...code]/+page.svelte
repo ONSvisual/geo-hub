@@ -3,10 +3,11 @@
 	import { afterNavigate, goto } from "$app/navigation";
 	import { base } from "$app/paths";
 	import { page } from "$app/stores";
-	import { assets, geoTypes, geoCodesLookup, noIndex } from "$lib/config";
-	import { capitalise, makeGeoJSON, getName, filterLinks, parseTemplate, addArticle, getPlace, makePath, filterChildren } from "$lib/utils";
+	import { capitalise, aAn, getName, toList} from "@onsvisual/robo-utils";
+	import { assets, geoTypes, geoCodesLookup, mapSources, noIndex } from "$lib/config";
+	import { makeGeoJSON, filterLinks, parseTemplate, getPlace, makePath, filterChildren } from "$lib/utils";
   import { analyticsEvent } from "$lib/layout/AnalyticsBanner.svelte";
-	import topojson from "$lib/data/ew-ctry-rgn.json";
+	import topojson from "$lib/data/uk-ctry-rgn.json";
 
 	import Titleblock from "$lib/layout/Titleblock.svelte";
 	import Headline from "$lib/layout/partial/Headline.svelte";
@@ -22,7 +23,7 @@
 	import MapTooltip from "@onsvisual/svelte-maps/src/MapTooltip.svelte";
 
 	export let data;
-	let { place, type, links } = data;
+	let { place, type, links, geometry } = data;
 	let childType = place?.childTypes[0];
   let postcode;
   let firstLoad = true;
@@ -33,9 +34,11 @@
       let newData = await getPlace(code);
       type = newData.type;
       place = newData.place;
+			geometry = newData.geometry;
     } else {
       place = data.place;
       type = data.type;
+			geometry = data.geometry;
     }
     if (!place) {
 			goto(`${base}/`);
@@ -96,6 +99,8 @@
     e.detail.areanm = getName(place);
 		navTo(e, {noScroll: true}, "map");
 	}
+
+	$: productLinks = filterLinks(links, place);
 </script>
 
 <svelte:head>
@@ -119,20 +124,34 @@
 {#if place}
 <Titleblock
 	breadcrumb="{[{label: 'Home', url: '/', refresh: true}, ...[...place.parents].reverse().map(p => ({label: getName(p), url: `${base}/${makePath(p.areacd)}`})), {label: getName(place)}]}">
-	<Headline>{getName(place)}</Headline>
+	<Headline>
+		{getName(place)}
+		{#if place.end}<span class="title-tag bg-warn">Inactive</span>{/if}
+	</Headline>
   <Subhead>Facts and figures about people living {getName(place, "in")}.</Subhead>
 </Titleblock>
 
 <Content>
   <p class="subtitle" style:max-width="768px">
-		{#if place.areacd != "K04000001"}
+		{#if place.areacd !== "K02000001"}
 		<strong>{capitalise(getName(place, "the"))}</strong>
       {#if ["E02", "W02"].includes(place.typecd)}
       ({place.areacd}), also known as {place.areanm},
       {:else}
       ({place.areacd})
       {/if}
-    is {addArticle(place.typenm)} <a href="{base}/{makePath(place.parents[0].areacd)}" data-sveltekit-noscroll>{getName(place.parents[0], "in")}</a>.
+    {place.end ? "was" : "is"} {aAn(place.typenm)} <a href="{base}/{makePath(place.parents[0].areacd)}" data-sveltekit-noscroll>{getName(place.parents[0], "in")}</a>.
+		{#if place.start && place.replaces?.[0]?.areacd}
+		In {place.start}, it replaced
+			{#each place.replaces as rep, i}
+			<a href="{base}/{makePath(rep.areacd)}" data-sveltekit-noscroll>{getName(rep, "the")}</a>{i === place.replaces.length - 2 ? " and " : ", "}
+			{/each}.
+		{/if}
+		{#if place.end && place.successor?.areacd}
+		In {place.end + 1}, it was replaced by <a href="{base}/{makePath(place.successor.areacd)}" data-sveltekit-noscroll>{getName(place.successor, "the")}</a> ({place.successor.areacd}).
+		{:else if place.end}
+		It ceased to be an official geography in {place.end + 1}.
+		{/if}
 		{/if}
 	</p>
   <label for="search" class="lbl-search">
@@ -144,50 +163,64 @@
   {/if}
   <hr class="ons-divider"/>
 
-  <Cards title="Areas in {["K04", "E92", "W92"].includes(place.typecd) ? '' : 'and around'} {getName(place, "the")}" id="related">
+  <Cards title="Areas in {["K02", "E92", "N92", "S92", "W92"].includes(place.typecd) ? '' : 'and around'} {getName(place, "the")}" id="related">
 		<Card colspan={2} blank>
 			<div style:height="450px">
-				<Map bind:map style="{base}/data/mapstyle.json" location={{bounds: place.bounds}} options={{fitBoundsOptions: {padding: 20}, maxBounds: [-12,47,7,62]}} controls>
-					{#each geoTypes as geo}
+				<Map bind:map style="{base}/data/mapstyle.json" location={{bounds: place.bounds}} options={{fitBoundsOptions: {padding: 20}, maxBounds: [-19, 48, 12, 62]}} controls>
+					{#each mapSources as s}
 					<MapSource
-						id={geo.key}
-						type={geo.source.type}
-						url={geo.source.type === "vector" ? geo.source.url : null}
-						data={geo.source.type === "geojson" ? makeGeoJSON(topojson, geo.key) : null}
-						layer={geo.source.type === "vector" ? geo.key : null} promoteId={geo.source.promoteId}
-						minzoom={geo.source.minzoom ? geo.source.minzoom : 0} maxzoom={12}
-						props={geo.source.type === "vector" ? {bounds: [-6.3603,49.88234,1.76357,55.8112]} : {}}>
+						id={s.id}
+						type={s.type}
+						url={s.type === "vector" ? s.url : null}
+						data={s.type === "geojson" ? makeGeoJSON(topojson, s.id) : null}
+						layer={s.type === "vector" ? s.layer : null} promoteId="areacd"
+						minzoom={s.minzoom ? s.minzoom : 0} maxzoom={12}
+						props={s.type === "NA" ? {bounds: [-6.3603,49.88234,1.76357,55.8112]} : {}}>
+						{#each s.layers as l}
 						<MapLayer
-							id="{geo.key}-fill"
+							id="{l.key}-fill"
 							type="fill"
 							paint={{
-								'fill-color': geo.key === type.key ? ['case', ['==', ['feature-state', 'selected'], true], 'rgb(17,140,123)', 'grey'] : 'rgb(17,140,123)',
+								'fill-color': l.key === type.key ? ['case', ['==', ['feature-state', 'selected'], true], 'rgb(17,140,123)', 'grey'] : 'rgb(17,140,123)',
 								'fill-opacity': ['case', ['==', ['feature-state', 'hovered'], true], 0.3, 0.1]
 							}}
-							visible={geo.key === type.key || geo.key === childType?.key}
+							visible={l.key === type.key || l.key === childType?.key}
 							filter={!childType ? null :
-								geo.key === type.key ? ["!=", "areacd", place.areacd] : 
+								l.key === type.key && l.filter ? ["all", ...l.filter.slice(1), ["!", ["==", ["get", "areacd"], place.areacd]]] :
+								l.key === type.key ? ["!", ["==", ["get", "areacd"], place.areacd]] : 
 								["in", "areacd", ...place.children.map(d => d.areacd)]}
 							hover on:hover={(e) => hovered = e.detail.feature} select selected={place.areacd}
 							on:select={mapSelect}>
 							<MapTooltip content={hovered ? getName(hovered.properties) : ''}/>
 						</MapLayer>
 						<MapLayer
-							id="{geo.key}-line"
+							id="{l.key}-line"
 							type="line"
-							paint={{'line-color': geo.key === type.key ? 'grey' : 'rgb(17,140,123)', 'line-width': 1}}
-							visible={geo.key === type.key || geo.key === childType?.key}
-							filter={geo.key === type.key ?
-								["!=", "areacd", place.areacd] : 
+							paint={{'line-color': l.key === type.key ? 'grey' : 'rgb(17,140,123)', 'line-width': 1}}
+							visible={l.key === type.key || l.key === childType?.key}
+							filter={l.key === type.key && l.filter ? ["all", ...l.filter.slice(1), ["!", ["==", ["get", "areacd"], place.areacd]]] :
+								l.key === type.key ? ["!", ["==", ["get", "areacd"], place.areacd]] : 
 								["in", "areacd", ...place.children.map(d => d.areacd)]}/>
 						<MapLayer
-							id="{geo.key}-active"
+							id="{l.key}-active"
 							type="line"
 							paint={{'line-color': 'rgb(17,140,123)', 'line-width': 2}}
-							visible={geo.key === type.key}
+							visible={l.key === type.key}
 							filter={["==", "areacd", place.areacd]}/>
+						{/each}
 					</MapSource>
 					{/each}
+					{#if place.end && geometry}
+					<MapSource
+						id="place"
+						type="geojson"
+						data={geometry}>
+						<MapLayer
+							id="place-line"
+							type="line"
+							paint={{'line-color': 'rgb(17,140,123)', 'line-width': 2}}></MapLayer>
+					</MapSource>
+					{/if}
 				</Map>
 			</div>
 		</Card>
@@ -199,43 +232,59 @@
 				<a href="{base}/{makePath(parent.areacd)}" data-sveltekit-noscroll>{getName(parent)}</a>
 			</span>
 			{/each}
+			<span class="parent" style:margin-left="{`${(place.parents.length) * 20}px`}">
+				{#if place.parents[0]}<Icon type="subdir"/>{/if}
+				<span style:color="#555">{getName(place)}</span>
+			</span>
 			{:else}
 			<span class="muted">No parent areas</span>
 			{/if}
 		</Card>
 		<Card colspan={3} title="Areas {getName(place, "in")}">
 			{#if childType}
-			{#if place.childTypes[1]}
-			<select bind:value={childType} style:display="block">
-				{#each place.childTypes as type}
-				<option value={type}>{capitalise(type.plural)}</option>
+			<div class="tabs">
+				<div class="tablist-container">
+					<div role="tablist" aria-label="Select child area type">
+						{#each place.childTypes as type}
+						<button
+							role="tab"
+							aria-selected="true"
+							aria-controls="child-{type.key}"
+							id="tab-{type.key}"
+							tabindex="0"
+							class:btn-active={childType.key === type.key}
+							on:click={() => childType = type}>
+							{capitalise(type.plural)}
+						</button>
+						{/each}
+					</div>
+				</div>
+				{#each place.childTypes as type, i}
+				<div id="panel-{type.key}" role="tabpanel" tabindex="0" aria-labelledby="tab-1" class:visuallyhidden={type.key !== childType.key}>
+					<ul bind:clientHeight={childrenHeight[type.key]} style:max-height="{childrenExpanded ? 'none' : '144px'}" class="list-columns">
+						{#each filterChildren(place, type) as child, i}
+						<li>
+							<a href="{base}/{makePath(child.areacd)}" data-sveltekit-noscroll rel="{noIndex.includes(child.areacd.slice(0, 3)) ? "nofollow" : null}">{getName(child)}</a>
+						</li>
+						{/each}
+					</ul>
+				</div>
 				{/each}
-			</select>
+				{#if childrenHeight[childType.key] >= 144}
+				<button class="btn-link" on:click={() => childrenExpanded = !childrenExpanded}><Icon type="chevron" rotation={childrenExpanded ? 90 : -90}/> {childrenExpanded ? "Show fewer" : "Show more"}</button>
+				{/if}
+			</div>
 			{:else}
-			<span class="type-label">{capitalise(childType.plural)}</span><br/>
-			{/if}
-      {#each place.childTypes as type, i}
-      <ul bind:clientHeight={childrenHeight[type.key]} style:max-height="{childrenExpanded ? 'none' : '144px'}" class="list-columns" class:visuallyhidden={type.key !== childType.key}>
-        {#each filterChildren(place, type) as child, i}
-        <li>
-          <a href="{base}/{makePath(child.areacd)}" data-sveltekit-noscroll rel="{noIndex.includes(child.areacd.slice(0, 3)) ? "nofollow" : null}">{getName(child)}</a>
-        </li>
-        {/each}
-      </ul>
-      {/each}
-      {#if childrenHeight[childType.key] >= 144}
-      <button class="btn-link" on:click={() => childrenExpanded = !childrenExpanded}><Icon type="chevron" rotation={childrenExpanded ? 90 : -90}/> {childrenExpanded ? "Show fewer" : "Show more"}</button>
-      {/if}
-			{:else}
-			<span class="muted">No areas available within {getName(place)}</span>
+			<span class="muted">No areas available within {getName(place, "the")}</span>
 			{/if}
 		</Card>
 	</Cards>
-
+	{#if productLinks[0]}
 	<Cards title="Facts and figures for {getName(place, "the")}" id="interactive">
-    {#each filterLinks(links, place) as link}
+    {#each productLinks as link}
     <CardFeature title={link.title} url="{parseTemplate(link.url, link.place)}" description="{parseTemplate(link.description, link.place)}" image="{link.image}" bgcolor="{link.bgcolor}"/>
     {/each}
 	</Cards>
+	{/if}
 </Content>
 {/if}

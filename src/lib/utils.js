@@ -1,12 +1,16 @@
-import { csvParse, autoType } from "d3-dsv";
+import * as d3 from "d3-dsv";
 import { feature } from "topojson-client";
-import { cdnUrl, geoCodesLookup, geoTypesLookup, geoNames } from "$lib/config";
+import { cdnUrl, geoCodesLookup, geoTypesLookup, geoNames, geoTypes, noIndex } from "$lib/config";
+
+const csvParse = (str, row = d3.autoType) => d3.csvParse(str.replace(/\uFEFF/, ""), row);
 
 export async function getData(url, fetch = window.fetch) {
   let res = await fetch(url);
   let str = await res.text();
-  let data = csvParse(str, autoType);
-  let cols = data.columns.filter(c => data[0][c] && data[0][c].includes("|"));
+  let data = csvParse(str);
+  let cols = data.columns.filter(c => {
+    data[0][c] && String(data[0][c]).includes("|");
+  });
   data.forEach((d, i) => {
     cols.forEach(col => {
       d[col] = d[col].split("|");
@@ -15,51 +19,31 @@ export async function getData(url, fetch = window.fetch) {
   return data;
 }
 
+function makeChildTypes(childcds) {
+  let childTypes = Array.from(new Set(childcds.sort((a, b) => a.localeCompare(b)).map(cd => geoCodesLookup[cd])))
+    .filter((d, i, arr) => arr.map(a => a.key).indexOf(d.key) === i);
+  const filterKeys = ["cauth", "utla", "ltla"].filter(key => childTypes.map(t => t.key).includes(key));
+  if (filterKeys.length > 1) childTypes = childTypes.filter(ct => !filterKeys.slice(1).includes(ct.key));
+  const sortKeys = geoTypes.map(g => g.key);
+  return childTypes.sort((a, b) => sortKeys.indexOf(a.key) - sortKeys.indexOf(b.key));
+}
+
 export async function getPlace(code, fetch = window.fetch) {
   try {
 		let typeCode = code.slice(0, 3);
 		let res = await fetch(`${cdnUrl}/${typeCode}/${code}.json`);
 		let json = await res.json();
 
-    json.properties.children = json.properties.children
-      .map(c => c.hclnm ? {areacd: c.areacd, areanm: c.hclnm} : c.areanm ? c : {areacd: c.areacd, areanm: c.areacd})
-      .sort((a, b) => a.areanm.localeCompare(b.areanm));
-
-		if (geoNames[typeCode]) json.properties.typenm = geoNames[typeCode].label; 
-		let childCodes = json.properties.children[0] ?
-				Array.from(new Set(json.properties.children.map(d => d.areacd.slice(0, 3)))).sort((a, b) => a.localeCompare(b)) : null;
-		json.properties.childTypes = childCodes ? Array.from(new Set(childCodes.map(c => geoCodesLookup[c]))) : [];
-		if (typeCode === "E12") {
-			json.properties.childTypes = json.properties.childTypes.filter(c => c.key !== "lad");
-			if (code === "E12000007") {
-				json.properties.childTypes = [
-					{
-						key: "lad",
-						codes: ["E09"],
-						label: "borough",
-						plural: "boroughs"
-					},
-					...json.properties.childTypes
-				];
-			}
-		} else if (typeCode === "W06") {
-      json.properties.childTypes = json.properties.childTypes.filter(c => c.key !== "par");
-      json.properties.childTypes = [
-        ...json.properties.childTypes,
-        {
-          key: "par",
-          codes: ["W04"],
-          label: "community",
-          plural: "communities"
-        }
-      ];
-    }
+		json.properties.childTypes = makeChildTypes(json.properties.child_typecds);
+		
     return {
       place: json.properties,
-      type: geoCodesLookup[typeCode]
+      type: geoCodesLookup[typeCode],
+      geometry: json.properties.end ? json.geometry : null,
     };
 	}
-  catch {
+  catch (err) {
+    console.debug(err);
     return {place: null, type: null};
   }
 }
@@ -83,11 +67,18 @@ export function getName(props, context = null) {
   return name;
 }
 
-export function getParent(geocodes, parents) {
+const validYear = (place, year) => !year || ((!place.start || year > place.start) && (!place.end || year <= place.end));
+
+export function getParent(link, place) {
+  const parents = [...place.parents];
+  if (["E", "W"].includes(place.areacd[0])) parents.push({
+    areacd: "K04000001",
+    areanm: "England and Wales",
+  });
   for (const parent of parents) {
     let typecd = parent.areacd.slice(0, 3);
-    if (geocodes.includes(typecd)) {
-      parent.groupcd = geoCodesLookup[typecd].key;
+    if (link.geocodes.includes(typecd) && validYear(parent, link.year)) {
+      parent.groupcd = geoCodesLookup[typecd]?.key ? geoCodesLookup[typecd].key : "ew";
       return parent;
     };
   }
@@ -98,11 +89,14 @@ export function filterLinks(links, place) {
   let thislinks = [];
   let parentlinks = [];
   links.forEach(l => {
-    let parent = getParent(l.geocodes, place.parents);
-    if (l.geocodes.includes(place.typecd)) {
+    let parent = getParent(l, place);
+    if (
+      l.geocodes.includes(place.typecd)
+      && validYear(place, l.year)
+    ) {
       thislinks.push({...l, place});
     } else if (parent) {
-      parentlinks.push({...l, place: getParent(l.geocodes, place.parents)});
+      parentlinks.push({...l, place: getParent(l, place)});
     }
   });
   return [...thislinks, ...parentlinks];
@@ -116,7 +110,7 @@ export function parseTemplate(template, place) {
     strs.forEach(s => {
       if (s.includes("name")) {
         let context = s.slice(1,-1).split(",")[1];
-        output = output.replace(s, getName(place, context));
+        output = output.replace(s, `<strong>${getName(place, context)}</strong>`);
       } else {
         output = output.replace(s, place[s.slice(1,-1)]);
       }
@@ -142,12 +136,7 @@ export function addArticle(str) {
 }
 
 export function makePath(code) {
-  if ([
-    "K04", "E92", "W92",
-    "E10", "E11", "E12",
-    "E06", "E07", "E08", "E09", "W06",
-    "E14", "W07"
-  ].includes(code.slice(0, 3))) {
+  if (!noIndex.includes(code.slice(0, 3))) {
     return code + "/";
   } else {
     return "area/?code=" + code;
@@ -155,7 +144,9 @@ export function makePath(code) {
 }
 
 export function filterChildren(place, type) {
-  return place.children.filter(c => type.codes.includes(c.areacd.slice(0, 3)));
+  const labelKey = type.key === "msoa" ? "hclnm" : type.key  === "oa" ? "areacd" : "areanm";
+  return place.children.filter(c => type.codes.includes(c.areacd.slice(0, 3)))
+    .sort((a, b) => a[labelKey].localeCompare(b[labelKey]));
 }
 
 export function makeGeoJSON(topojson, layer) {
@@ -206,4 +197,9 @@ export function makeSum(values) {
 export function isNA(arr) {
   let sum = arr ? arr.slice(0,-1).reduce((a, b) => a + b) : 0;
   return sum == 0;
+}
+
+export function pluralise(str) {
+  if (str.slice(-1) === "y") return str.slice(0, -1) + "ies";
+  else return str + "s";
 }
