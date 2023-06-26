@@ -100,7 +100,7 @@
 		navTo(e, {noScroll: true}, "map");
 	}
 
-	$: productLinks = filterLinks(links, place);
+	$: productLinks = place ? filterLinks(links, place) : [];
 </script>
 
 <svelte:head>

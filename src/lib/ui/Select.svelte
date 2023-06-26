@@ -11,6 +11,8 @@
 
 	export const regionReverseLookup = {
 		"England": "E92000001",
+		"Northern Ireland": "N92000002",
+		"Scotland": "S92000003",
 		"Wales": "W92000004",
 		"North East": "E12000001",
 		"North West": "E12000002",
@@ -73,12 +75,12 @@
             places.push({areacd: code, areanm: name, typenm: g.label.replace("/unitary", "")});
           }
         });
-				let place = items.find(p => p.areacd == json.result.codes.admin_district);
-				if (place) {
+				console.log(json.result, places);
+				if (places[0]) {
 					placeholder = "Type a place name or postcode";
-          dispatch("select", {type: "postcode", areacd: place.areacd, postcd: json.result.postcode, places});
+          dispatch("select", {type: "postcode", areacd: null, postcd: json.result.postcode, places});
 				} else {
-					placeholder = "Postcode must be in England or Wales";
+					placeholder = "Must be a valid postcode";
 				}
 			}
 		} else {
