@@ -85,6 +85,6 @@
   </ul>
 
   <p>
-    Some data about Wales is also published on the <a href="https://statswales.gov.wales/Catalogue" target="_blank" rel="noreferrer">Stats Wales website</a>.
+    Some data about Wales is also published on the <a href="https://statswales.gov.wales/Catalogue" target="_blank" rel="noreferrer">Stats Wales website</a> <span class="inline-icon"><Icon type="launch"/>
   </p>
 </Article>
