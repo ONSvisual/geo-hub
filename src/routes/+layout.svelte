@@ -8,9 +8,7 @@
   import CensusBanner from "$lib/layout/CensusBanner.svelte";
 	
   // For localisation of menu etc
-  let path = $page.url.pathname;
-  let lang = $page.url.hostname.split(".")[0] == "cy" ? "cy" : "en";
-  let baseurl = lang == "cy" ? "//cy.ons.gov.uk" : "//www.ons.gov.uk";
+  $: lang = $page.url.hostname.split(".")[0] === "cy" ? "cy" : "en";
 
   // GOOGLE ANALYTICS
   // Settings for page analytics. Values must be shared with <AnalyticsBanner> component
@@ -25,7 +23,7 @@
 
 <AnalyticsBanner {analyticsId} {analyticsProps}/>
 <PhaseBanner url="https://www.surveymonkey.co.uk/r/2SGF6X2"/>
-<ONSHeader/>
+<ONSHeader {lang}/>
 <CensusBanner/>
 
 <main id="main" tabindex="-1">

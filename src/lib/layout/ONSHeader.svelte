@@ -1,7 +1,11 @@
 <script>
-	export let path = "/";
+	import { page } from "$app/stores";
+	
 	export let lang = "en";
-	export let baseurl = "//www.ons.gov.uk";
+
+	$: path = $page.url.pathname;
+	$: baseurl = `//${$page.url.host}`;
+	$: baseother = lang === "en" ? `//cy.${$page.url.host.replace("www.", "")}` : `//www.${$page.url.host.replace("cy.", "")}`;
 
 	let menuExpanded = false;
 	let searchExpanded = false;
@@ -115,9 +119,9 @@
 				<div class="language">
 					{#if lang =="en"}
 					<span>English (EN) | </span>
-					<a href="//cy.ons.gov.uk{path}" class="language__link" lang="cy">Cymraeg (CY)</a>
+					<a href="{baseother}{path}" class="language__link" lang="cy">Cymraeg (CY)</a>
 					{:else}
-					<a href="//www.ons.gov.uk{path}" class="language__link" lang="en">English (EN)</a>
+					<a href="{baseother}{path}" class="language__link" lang="en">English (EN)</a>
 					<span> | Cymraeg (EN)</span>
 					{/if}
 				</div>
@@ -180,9 +184,9 @@
 				<li class="hide--md primary-nav__language">
 					{#if lang =="en"}
 					<span>English (EN) | </span>
-					<a href="//cy.ons.gov.uk{path}" class="language__link" lang="cy">Cymraeg (CY)</a>
+					<a href="{baseother}{path}" class="language__link" lang="cy">Cymraeg (CY)</a>
 					{:else}
-					<a href="//www.ons.gov.uk{path}" class="language__link" lang="en">English (EN)</a>
+					<a href="{baseother}{path}" class="language__link" lang="en">English (EN)</a>
 					<span> | Cymraeg (EN)</span>
 					{/if}
 				</li>

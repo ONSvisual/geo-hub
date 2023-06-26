@@ -1,5 +1,6 @@
 import * as d3 from "d3-dsv";
 import { feature } from "topojson-client";
+import { getName } from "@onsvisual/robo-utils";
 import { cdnUrl, geoCodesLookup, geoTypesLookup, geoNames, geoTypes, noIndex } from "$lib/config";
 
 const csvParse = (str, row = d3.autoType) => d3.csvParse(str.replace(/\uFEFF/, ""), row);
@@ -48,25 +49,6 @@ export async function getPlace(code, fetch = window.fetch) {
   }
 }
 
-export function getName(props, context = null) {
-  let name = props.hclnm ? props.hclnm : props.areanm ? props.areanm : props.areacd;
-  let island = name.startsWith("Isle");
-  let the = [
-    "E12000001", "E12000002", "E12000004", "E12000005", "E12000006", "E12000008", "E12000009",
-    "E09000001", "E07000035"
-  ].includes(props.areacd) || 
-    name.startsWith("Vale of");
-  name = name.replace("&", "and").replace(", City of", "").replace(", County of", "");
-  if (["in","the"].includes(context)) {
-    if (island || the) name = "the " + name;
-  }
-  if (context === "in") {
-    if (island) name = "on " + name;
-    else name = "in " + name;
-  }
-  return name;
-}
-
 const validYear = (place, year) => !year || ((!place.start || year > place.start) && (!place.end || year <= place.end));
 
 export function getParent(link, place) {
@@ -110,7 +92,7 @@ export function parseTemplate(template, place) {
     strs.forEach(s => {
       if (s.includes("name")) {
         let context = s.slice(1,-1).split(",")[1];
-        output = output.replace(s, `<strong>${getName(place, context)}</strong>`);
+        output = output.replace(s, `${getName(place, context, "prefix")} <strong>${getName(place)}</strong>`);
       } else {
         output = output.replace(s, place[s.slice(1,-1)]);
       }

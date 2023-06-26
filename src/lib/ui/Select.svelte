@@ -70,7 +70,7 @@
           let name = json.result[g.pcio];
           if (name && !name.includes('unparished')) {
             let code = json.result.codes[g.pcio] ? json.result.codes[g.pcio] : regionReverseLookup[name];
-            places.push({areacd: code, areanm: name, typenm: g.label.split("/")[0]});
+            places.push({areacd: code, areanm: name, typenm: g.label.replace("/unitary", "")});
           }
         });
 				let place = items.find(p => p.areacd == json.result.codes.admin_district);

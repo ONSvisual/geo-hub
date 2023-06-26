@@ -123,7 +123,7 @@
 
 {#if place}
 <Titleblock
-	breadcrumb="{[{label: 'Home', url: '/', refresh: true}, ...[...place.parents].reverse().map(p => ({label: getName(p), url: `${base}/${makePath(p.areacd)}`})), {label: getName(place)}]}">
+	breadcrumb="{[{label: 'Home', url: '/', refresh: true}, {label: "Find a geographic area", url: `${base}/`}, ...[...place.parents].reverse().map(p => ({label: getName(p), url: `${base}/${makePath(p.areacd)}`})), {label: getName(place)}]}">
 	<Headline>
 		{getName(place)}
 		{#if place.end}<span class="title-tag bg-warn">Inactive</span>{/if}
@@ -132,23 +132,25 @@
 </Titleblock>
 
 <Content>
-  <p class="subtitle" style:max-width="768px">
+  <p class="subtitle" style:max-width="768px">	
 		{#if place.areacd !== "K02000001"}
-		<strong>{capitalise(getName(place, "the"))}</strong>
+		{capitalise(getName(place, "the", "prefix"))}
+		<strong>{getName(place)}</strong>
       {#if ["E02", "W02"].includes(place.typecd)}
       ({place.areacd}), also known as {place.areanm},
       {:else}
       ({place.areacd})
       {/if}
-    {place.end ? "was" : "is"} {aAn(place.typenm)} <a href="{base}/{makePath(place.parents[0].areacd)}" data-sveltekit-noscroll>{getName(place.parents[0], "in")}</a>.
+    {place.end ? "was" : "is"} {aAn(place.typenm)} {getName(place.parents[0], "in", "prefix")} <a href="{base}/{makePath(place.parents[0].areacd)}" data-sveltekit-noscroll>{getName(place.parents[0])}</a>.
 		{#if place.start && place.replaces?.[0]?.areacd}
 		In {place.start}, it replaced
 			{#each place.replaces as rep, i}
-			<a href="{base}/{makePath(rep.areacd)}" data-sveltekit-noscroll>{getName(rep, "the")}</a>{i === place.replaces.length - 2 ? " and " : ", "}
+			{getName(rep, "the", "prefix")}
+			<a href="{base}/{makePath(rep.areacd)}" data-sveltekit-noscroll>{getName(rep)}</a>{i === place.replaces.length - 2 ? " and " : ", "}
 			{/each}.
 		{/if}
 		{#if place.end && place.successor?.areacd}
-		In {place.end + 1}, it was replaced by <a href="{base}/{makePath(place.successor.areacd)}" data-sveltekit-noscroll>{getName(place.successor, "the")}</a> ({place.successor.areacd}).
+		In {place.end + 1}, it was replaced by {getName(place.successor, "the", "prefix")} <a href="{base}/{makePath(place.successor.areacd)}" data-sveltekit-noscroll>{getName(place.successor)}</a> ({place.successor.areacd}).
 		{:else if place.end}
 		It ceased to be an official geography in {place.end + 1}.
 		{/if}

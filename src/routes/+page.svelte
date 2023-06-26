@@ -48,11 +48,11 @@
 <Titleblock
 	breadcrumb="{[{label: 'Home', url: '/', refresh: true}, {label: 'Find a geographic area'}]}">
 	<Headline>Find facts and figures about areas in the United Kingdom</Headline>
-  <Subhead>Get data about people and the communities they live in, includes population, identity, housing, people in or out of work, education and health.</Subhead>
+  <Subhead>Get data about people and the communities they live in, including population, identity, housing, people in or out of work, education and health.</Subhead>
 </Titleblock>
 <Article>
   <p>
-    You can find information about your area, local authority, ward, parish or parliamentary constituency.
+    You can find information about your area, local authority, combined authority, ward, parish or parliamentary constituency.
   </p>
 
   <label for="search" class="lbl-search">
