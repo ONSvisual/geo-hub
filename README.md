@@ -11,6 +11,6 @@ The Area hub is a [Svelte Kit](https://kit.svelte.dev/) app, and requires NodeJS
 1. Download or clone the contents of this repo to your local machine.
 2. Install the Node dependencies by opening the folder running `npm install` from your command line.
 3. Initialise the app by running `npm run dev`.
-4. Preview the app in your browser by navigating to [http://localhost:5173/].
+4. Preview the app in your browser by navigating to http://localhost:5173/.
 
 Making changes to the app will require a working knowledge of Svelte Kit.
