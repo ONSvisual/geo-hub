@@ -18,7 +18,9 @@ const config = {
 			handleHttpError: 'warn'
 		},
 		paths: {
-			base: production && ons_build ? '/visualisations/areas' : production ? '/geo-hub' : ''
+			// assets: production && ons_build ? 'https://www.ons.gov.uk/visualisations/areas' : null,
+			base: production && ons_build ? '/visualisations/areas' : production ? '/geo-hub' : '',
+			relative: false
 		}
 	}
 };
