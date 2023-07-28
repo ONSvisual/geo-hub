@@ -49,8 +49,8 @@ export const sources = [
   {
     id: "wd",
     type: "vector",
-    url: "https://cdn.ons.gov.uk/maptiles/administrative/2022/wd/v1/boundaries/{z}/{x}/{y}.pbf",
-    layer: "wd",
+    url: "https://cdn.ons.gov.uk/maptiles/administrative/2023/wd/v1/boundaries/{z}/{x}/{y}.pbf",
+    layer: "boundaries",
     minzoom: 6
   },
   {

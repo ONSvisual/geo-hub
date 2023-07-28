@@ -146,8 +146,8 @@
 		In {place.start}, it replaced
 			{#each place.replaces as rep, i}
 			{getName(rep, "the", "prefix")}
-			<a href="{base}/{makePath(rep.areacd)}" data-sveltekit-noscroll>{getName(rep)}</a>{i === place.replaces.length - 2 ? " and " : ", "}
-			{/each}.
+			<a href="{base}/{makePath(rep.areacd)}" data-sveltekit-noscroll>{getName(rep)}</a>{i === place.replaces.length - 1 ? "." : i === place.replaces.length - 2 ? " and " : ", "}
+			{/each}
 		{/if}
 		{#if place.end && place.successor?.areacd}
 		In {place.end + 1}, it was replaced by {getName(place.successor, "the", "prefix")} <a href="{base}/{makePath(place.successor.areacd)}" data-sveltekit-noscroll>{getName(place.successor)}</a> ({place.successor.areacd}).
