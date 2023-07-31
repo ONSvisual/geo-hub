@@ -322,23 +322,26 @@
 			<div class="tabs">
 				<label>
 					<div style:font-size="16px" style:margin="12px 0 6px"><strong>Select a topic</strong></div>
-					<select bind:value={topic} role="tablist" class="ons-input--select">
+					<select bind:value={topic} class="ons-input--select">
+						<option value={null}>Show all topics</option>
 						{#each topics as t}
 						<option value={t}>{t.label}</option>
 						{/each}
 					</select>
 				</label>
-				{#each topics as t}
-				<div id="panel-{t.key}" role="tabpanel" tabindex="0" aria-labelledby="tab-1" class:visuallyhidden={t.key !== topic.key}>
-					<ul class="list-columns list-columns-topics">
-						{#each datasets.filter(d => d.topic === t.label) as dataset, i}
+				<div>
+					<ul class="list-columns list-datasets">
+						{#each datasets as dataset, i}
+						{#if !topic || dataset.topic === topic.label}
 						<li>
-							<a href="https://beta.gss-data.org.uk/cube/explore?uri={encodeURIComponent(dataset.uri)}" rel="nofollow" target="_blank">{dataset.label}</a>
+							<a class="dataset-title" href="https://beta.gss-data.org.uk/cube/explore?uri={encodeURIComponent(dataset.uri)}" rel="nofollow" target="_blank">{dataset.label}</a><span class="link-ext-icon"><Icon type="launch"/></span>
+							<span class="dataset-source">{dataset.sources?.length > 1 ? "Sources" : "Source"}: {dataset.sources.join(", ")}</span>
+							<span class="dataset-description">{dataset.description}</span>
 						</li>
+						{/if}
 						{/each}
 					</ul>
 				</div>
-				{/each}
 			</div>
 		</Card>
 	</Cards>

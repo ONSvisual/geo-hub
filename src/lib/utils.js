@@ -122,7 +122,7 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX dcat: <http://www.w3.org/ns/dcat#>
 PREFIX pmdcat: <http://publishmydata.com/pmdcat#>
 
-SELECT DISTINCT ?label ?topic ?description ?uri
+SELECT DISTINCT ?label ?topic ?description ?description_md ?uri
 WHERE {
     ?geo owl:sameAs <http://statistics.data.gov.uk/id/statistical-geography/${code}> .
     ?geo_uri rdfs:label "Statistical Geography"@en .
@@ -133,11 +133,19 @@ WHERE {
           dcat:keyword "subnational"@en ;
           rdfs:label ?label ;
           rdfs:comment ?description ;
+          pmdcat:markdownDescription ?description_md ;
           dcat:theme ?topicUri .
     ?topicUri rdfs:label ?topic .
 }`);
   const url = `${api}?query=${sparql}`;
-  const datasets = csvParse(await (await fetch(url)).text());
+  const datasets = csvParse(await (await fetch(url)).text(), (row) => {
+    console.log(row.description_md);
+    const source_str = row.description_md
+      .match(/(?<=###\sSource\n\n)(.*?)(?=\n\n)/s)?.[0]
+      ?.replace(/\(.*?\)|\[|\]/gm, "") || null;
+    row.sources = source_str.match(/(?<=:\s)(.*?)(?=\s$)/gm);
+    return row;
+  });
   if (!datasets[0]) return {topics: null, datasets: null};
   datasets.sort((a, b) => a.label.localeCompare(b.label));
   const topics = Array.from(new Set(datasets.map(d => d.topic)))
