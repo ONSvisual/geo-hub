@@ -65,7 +65,6 @@
 		}
 		if (place) {
 			const newDatasets = await getDatasets(place.areacd);
-			console.log("datasets", place.areacd, newDatasets);
 			topics = newDatasets.topics;
 			topic = topics?.[0];
 			datasets = newDatasets.datasets;
@@ -128,7 +127,6 @@
 	}
 
 	$: productLinks = place ? filterLinks(links, place) : [];
-	$: console.log(topics, datasets);
 </script>
 
 <svelte:head>
