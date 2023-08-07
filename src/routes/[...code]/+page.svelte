@@ -273,7 +273,7 @@
 		<Card colspan={3} title="Areas {getName(place, "in")}">
 			{#if childType}
 			<div class="tabs">
-				<div class="tablist-container">
+				<div class="tablist-container" aria-hidden="true">
 					<div role="tablist" aria-label="Select child area type">
 						{#each place.childTypes as type}
 						<button
@@ -291,6 +291,7 @@
 				</div>
 				{#each place.childTypes as type, i}
 				<div id="panel-{type.key}" role="tabpanel" tabindex="0" aria-labelledby="tab-1" class:visuallyhidden={type.key !== childType.key}>
+					<h3 class="visuallyhidden">{capitalise(type.plural)}</h3>
 					<ul bind:clientHeight={childrenHeight[type.key]} style:max-height="{childrenExpanded ? 'none' : '144px'}" class="list-columns">
 						{#each filterChildren(place, type) as child, i}
 						<li>
@@ -317,10 +318,10 @@
 	</Cards>
 	{/if}
 	{#if topics}
-	<Cards title="Datasets that include {getName(place, "the")}" id="datasets">
+	<Cards title="Structured datasets that include {getName(place, "the")}" id="datasets">
 		<Card colspan={3}>
 			<div class="tabs">
-				<label>
+				<label aria-hidden="true">
 					<div style:font-size="16px" style:margin="12px 0 6px"><strong>Select a topic</strong></div>
 					<select bind:value={topic} class="ons-input--select">
 						<option value={null}>Show all topics</option>
@@ -332,13 +333,11 @@
 				<div>
 					<ul class="list-columns list-datasets">
 						{#each datasets as dataset, i}
-						{#if !topic || dataset.topic === topic.label}
-						<li>
+						<li class:visuallyhidden={topic && dataset.topic !== topic.label}>
 							<a class="dataset-title" href="https://beta.gss-data.org.uk/cube/explore?uri={encodeURIComponent(dataset.uri)}" rel="nofollow" target="_blank">{dataset.label}</a><span class="link-ext-icon"><Icon type="launch"/></span>
 							<span class="dataset-source">{dataset.sources?.length > 1 ? "Sources" : "Source"}: {dataset.sources.join(", ")}</span>
 							<span class="dataset-description">{dataset.description}</span>
 						</li>
-						{/if}
 						{/each}
 					</ul>
 				</div>

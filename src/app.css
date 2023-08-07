@@ -134,11 +134,19 @@ ul.list-columns {
   padding: 0;
   column-width: 170px;
   overflow-x: none;
+  position: relative;
 }
 ul.list-datasets {
   /* margin-top: 12px; */
   font-size: 16px;
   column-width: auto;
+}
+ul.list-datasets::before {
+  content: " ";
+  position: absolute;
+  top: 0;
+  width: 100%;
+  border-top: 3px solid #f5f5f6;
 }
 ul.list-columns > li {
   font-size: 16px !important;
@@ -147,17 +155,18 @@ ul.list-columns > li {
 }
 ul.list-datasets > li {
   padding: 12px 0;
-}
-ul.list-datasets > li + li {
   border-top: 1px solid #999;
 }
+/* ul.list-datasets > li + li {
+  border-top: 1px solid #999;
+} */
 .dataset-title {
   font-size: 18px;
   font-weight: bold;
 }
 .dataset-source {
   display: block;
-  margin: 6px 0 4px;
+  margin: 4px 0 2px;
   font-size: 14px;
   color: #555;
 }
