@@ -3,10 +3,24 @@
 	import { afterNavigate, goto } from "$app/navigation";
 	import { base } from "$app/paths";
 	import { page } from "$app/stores";
-	import { capitalise, aAn, getName, toList} from "@onsvisual/robo-utils";
-	import { assets, geoTypes, geoCodesLookup, mapSources, noIndex } from "$lib/config";
-	import { makeGeoJSON, filterLinks, parseTemplate, getPlace, makePath, filterChildren } from "$lib/utils";
-  import { analyticsEvent } from "$lib/layout/AnalyticsBanner.svelte";
+	import { capitalise, aAn, getName, toList } from "@onsvisual/robo-utils";
+	import {
+		assets,
+		geoTypes,
+		geoCodesLookup,
+		mapSources,
+		noIndex,
+	} from "$lib/config";
+	import {
+		makeGeoJSON,
+		filterLinks,
+		parseTemplate,
+		getPlace,
+		makePath,
+		filterChildren,
+        getDatasets,
+	} from "$lib/utils";
+	import { analyticsEvent } from "$lib/layout/AnalyticsBanner.svelte";
 	import topojson from "$lib/data/uk-ctry-rgn.json";
 
 	import Titleblock from "$lib/layout/Titleblock.svelte";
@@ -17,87 +31,99 @@
 	import Card from "$lib/layout/partial/Card.svelte";
 	import CardFeature from "$lib/layout/partial/CardFeature.svelte";
 	import Select from "$lib/ui/Select.svelte";
-  import AreaList from "$lib/ui/AreaList.svelte";
+	import AreaList from "$lib/ui/AreaList.svelte";
 	import Icon from "$lib/ui/Icon.svelte";
 	import { Map, MapSource, MapLayer } from "@onsvisual/svelte-maps";
 	import MapTooltip from "@onsvisual/svelte-maps/src/MapTooltip.svelte";
 
 	export let data;
 	let { place, type, links, geometry } = data;
+	let topics, topic, datasets;
 	let childType = place?.childTypes[0];
-  let postcode;
-  let firstLoad = true;
+	let postcode;
+	let firstLoad = true;
 
 	async function pageLoad() {
-    let code = $page.url.searchParams.get("code");
+		let code = $page.url.searchParams.get("code");
 		if (!data.place && code) {
-      let newData = await getPlace(code);
-      type = newData.type;
-      place = newData.place;
+			const newData = await getPlace(code);
+			type = newData.type;
+			place = newData.place;
 			geometry = newData.geometry;
-    } else {
-      place = data.place;
-      type = data.type;
+		} else {
+			place = data.place;
+			type = data.type;
 			geometry = data.geometry;
-    }
-    if (!place) {
+		}
+		if (!place) {
 			goto(`${base}/`);
 		} else if (place && place.childTypes[0]) {
-			if (!place.childTypes.includes(childType)) childType = place.childTypes[0];
+			if (!place.childTypes.includes(childType))
+				childType = place.childTypes[0];
 		} else {
 			childType = null;
 		}
-		if (place && map) map.fitBounds(place.bounds, {padding: 20});
-    
-    if (firstLoad) {
-      firstLoad = false;
-    } else {
-      let areaData = place ? {
-        areaCode: place.areacd,
-        areaName: getName(place),
-        areaType: type.label
-      } : {};
-      analyticsEvent({
-        event: "pageView",
-        pageURL: $page.url.href,
-        ...areaData,
-        contentType: "exploratory",
-      });
-    }
-    
-    postcode = null;
-    childrenExpanded = false;
+		if (place) {
+			const newDatasets = await getDatasets(place.areacd);
+			topics = newDatasets.topics;
+			topic = topics?.[0];
+			datasets = newDatasets.datasets;
+		} else {
+			topics = null, topic = null, datasets = null;
+		}
+		if (place && map) map.fitBounds(place.bounds, { padding: 20 });
+
+		if (firstLoad) {
+			firstLoad = false; // Prevents double-firing of analyics event on first load
+		} else {
+			let areaData = place
+				? {
+						areaCode: place.areacd,
+						areaName: getName(place),
+						areaType: type.label,
+				  }
+				: {};
+			analyticsEvent({
+				event: "pageView",
+				pageURL: $page.url.href,
+				...areaData,
+				contentType: "exploratory",
+			});
+		}
+
+		postcode = null;
+		childrenExpanded = false;
 	}
 	onMount(pageLoad);
 	afterNavigate(pageLoad);
-	
+
 	// DOM Elements
 	let map = null;
 	let hovered = null;
-  let childrenHeight = {};
-  let childrenExpanded = false;
+	let childrenHeight = {};
+	let childrenExpanded = false;
 
 	// Functions etc
 	function navTo(e, options = {}, type = "search") {
-    if (e.detail.type === "postcode") {
-      postcode = e.detail;
-    } else {
-      postcode = null;
-      analyticsEvent({
-        event: type === "map" ? "mapSelect" : "searchSelect",
-        areaCode: e.detail.areacd,
-        areaName: e.detail.areanm,
-        areaType: geoCodesLookup[e.detail.areacd.slice(0, 3)].label
-      });
-      goto(`${base}/${makePath(e.detail.areacd)}`, options);
-    }
+		if (e.detail.type === "postcode") {
+			postcode = e.detail;
+		} else {
+			postcode = null;
+			analyticsEvent({
+				event: type === "map" ? "mapSelect" : "searchSelect",
+				areaCode: e.detail.areacd,
+				areaName: e.detail.areanm,
+				areaType: geoCodesLookup[e.detail.areacd.slice(0, 3)].label,
+			});
+			goto(`${base}/${makePath(e.detail.areacd)}`, options);
+		}
 	}
 	function mapSelect(e) {
-    let code = e.detail.id;
-    let place = e.detail.feature.properties;
-    e.detail.areacd = code;
-    e.detail.areanm = getName(place);
-		navTo(e, {noScroll: true}, "map");
+		let code = e.detail.id;
+		let place = e.detail.feature.properties;
+		e.detail.areacd = code;
+		e.detail.areanm = getName(place);
+		navTo(e, { noScroll: true }, "map");
 	}
 
 	$: productLinks = place ? filterLinks(links, place) : [];
@@ -245,7 +271,7 @@
 		<Card colspan={3} title="Areas {getName(place, "in")}">
 			{#if childType}
 			<div class="tabs">
-				<div class="tablist-container">
+				<div class="tablist-container" aria-hidden="true">
 					<div role="tablist" aria-label="Select child area type">
 						{#each place.childTypes as type}
 						<button
@@ -263,6 +289,7 @@
 				</div>
 				{#each place.childTypes as type, i}
 				<div id="panel-{type.key}" role="tabpanel" tabindex="0" aria-labelledby="tab-1" class:visuallyhidden={type.key !== childType.key}>
+					<h3 class="visuallyhidden">{capitalise(type.plural)}</h3>
 					<ul bind:clientHeight={childrenHeight[type.key]} style:max-height="{childrenExpanded ? 'none' : '144px'}" class="list-columns">
 						{#each filterChildren(place, type) as child, i}
 						<li>
@@ -286,6 +313,34 @@
     {#each productLinks as link}
     <CardFeature title={link.title} url="{parseTemplate(link.url, link.place)}" description="{parseTemplate(link.description, link.place)}" image="{link.image}" bgcolor="{link.bgcolor}"/>
     {/each}
+	</Cards>
+	{/if}
+	{#if topics}
+	<Cards title="Structured datasets that include {getName(place, "the")}" id="datasets">
+		<Card colspan={3}>
+			<div class="tabs">
+				<label aria-hidden="true">
+					<div style:font-size="16px" style:margin="12px 0 6px"><strong>Select a topic</strong></div>
+					<select bind:value={topic} class="ons-input--select">
+						<option value={null}>Show all topics</option>
+						{#each topics as t}
+						<option value={t}>{t.label}</option>
+						{/each}
+					</select>
+				</label>
+				<div>
+					<ul class="list-columns list-datasets">
+						{#each datasets as dataset, i}
+						<li class:visuallyhidden={topic && dataset.topic !== topic.label}>
+							<a class="dataset-title" href="https://beta.gss-data.org.uk/cube/explore?uri={encodeURIComponent(dataset.uri)}" rel="nofollow" target="_blank">{dataset.label}</a><span class="link-ext-icon"><Icon type="launch"/></span>
+							<span class="dataset-source">{dataset.sources?.length > 1 ? "Sources" : "Source"}: {dataset.sources.join(", ")}</span>
+							<span class="dataset-description">{dataset.description}</span>
+						</li>
+						{/each}
+					</ul>
+				</div>
+			</div>
+		</Card>
 	</Cards>
 	{/if}
 </Content>

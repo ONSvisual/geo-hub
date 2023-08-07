@@ -1,4 +1,4 @@
-import { getPlace } from "$lib/utils";
+import { getPlace, getDatasets } from "$lib/utils";
 import { building } from '$app/environment';
 
 export async function load({ fetch, params, parent }) {
@@ -9,7 +9,9 @@ export async function load({ fetch, params, parent }) {
 
 	let { place, type, geometry } = await getPlace(code, fetch);
 
-  if (building) console.log(code);
+	// let { topics, datasets } = await getDatasets(code, fetch);
 	
-  return { place, type, geometry, links };
+	if (building) console.log(code);
+	
+	return { place, type, geometry, links};
 }

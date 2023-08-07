@@ -5,6 +5,17 @@ import { cdnUrl, geoCodesLookup, geoTypesLookup, geoNames, geoTypes, noIndex } f
 
 const csvParse = (str, row = d3.autoType) => d3.csvParse(str.replace(/\uFEFF/, ""), row);
 
+export const slugify = (str) =>
+  str
+    .toString()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^\w-]+/g, "")
+    .replace(/--+/g, "-");
+
 export async function getData(url, fetch = window.fetch) {
   let res = await fetch(url);
   let str = await res.text();
@@ -100,6 +111,47 @@ export function parseTemplate(template, place) {
   }
   
   return output;
+}
+
+export async function getDatasets(code, fetch = window.fetch) {
+  const api = "https://beta.gss-data.org.uk/sparql";
+  const sparql = encodeURIComponent(`PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX qb: <http://purl.org/linked-data/cube#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX dcat: <http://www.w3.org/ns/dcat#>
+PREFIX pmdcat: <http://publishmydata.com/pmdcat#>
+
+SELECT DISTINCT ?label ?topic ?description ?description_md ?uri
+WHERE {
+    ?geo owl:sameAs <http://statistics.data.gov.uk/id/statistical-geography/${code}> .
+    ?geo_uri rdfs:label "Statistical Geography"@en .
+    ?obs rdf:type qb:Observation ;
+          ?geo_uri ?geo ;
+          qb:dataSet ?datasetUri .
+    ?uri pmdcat:datasetContents ?datasetUri ;
+          dcat:keyword "subnational"@en ;
+          rdfs:label ?label ;
+          rdfs:comment ?description ;
+          pmdcat:markdownDescription ?description_md ;
+          dcat:theme ?topicUri .
+    ?topicUri rdfs:label ?topic .
+}`);
+  const url = `${api}?query=${sparql}`;
+  const datasets = csvParse(await (await fetch(url)).text(), (row) => {
+    console.log(row.description_md);
+    const source_str = row.description_md
+      .match(/(?<=###\sSource\n\n)(.*?)(?=\n\n)/s)?.[0]
+      ?.replace(/\(.*?\)|\[|\]/gm, "") || null;
+    row.sources = source_str.match(/(?<=:\s)(.*?)(?=\s$)/gm);
+    return row;
+  });
+  if (!datasets[0]) return {topics: null, datasets: null};
+  datasets.sort((a, b) => a.label.localeCompare(b.label));
+  const topics = Array.from(new Set(datasets.map(d => d.topic)))
+    .sort((a, b) => a.localeCompare(b))
+    .map(t => ({key: slugify(t), label: t}));
+  return {topics, datasets};
 }
 
 export function addArticle(str) {
