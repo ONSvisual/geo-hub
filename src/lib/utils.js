@@ -116,6 +116,7 @@ export function parseTemplate(template, place) {
 export async function getDatasets(code, fetch = window.fetch) {
   const api = "https://beta.gss-data.org.uk/sparql";
   const sparql = encodeURIComponent(`PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 PREFIX qb: <http://purl.org/linked-data/cube#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -124,7 +125,7 @@ PREFIX pmdcat: <http://publishmydata.com/pmdcat#>
 
 SELECT DISTINCT ?label ?topic ?description ?description_md ?uri
 WHERE {
-    ?geo owl:sameAs <http://statistics.data.gov.uk/id/statistical-geography/${code}> .
+    ?geo ?match <http://statistics.data.gov.uk/id/statistical-geography/${code}> .
     ?geo_uri rdfs:label "Statistical Geography"@en .
     ?obs rdf:type qb:Observation ;
           ?geo_uri ?geo ;
@@ -136,10 +137,10 @@ WHERE {
           pmdcat:markdownDescription ?description_md ;
           dcat:theme ?topicUri .
     ?topicUri rdfs:label ?topic .
+  FILTER (?match in (skos:exactMatch, owl:sameAs))
 }`);
   const url = `${api}?query=${sparql}`;
   const datasets = csvParse(await (await fetch(url)).text(), (row) => {
-    console.log(row.description_md);
     const source_str = row.description_md
       .match(/(?<=###\sSource\n\n)(.*?)(?=\n\n)/s)?.[0]
       ?.replace(/\(.*?\)|\[|\]/gm, "") || null;
