@@ -122,22 +122,27 @@ PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX dcat: <http://www.w3.org/ns/dcat#>
 PREFIX pmdcat: <http://publishmydata.com/pmdcat#>
+PREFIX sdmx-d: <http://purl.org/linked-data/sdmx/2009/dimension#>
 
-SELECT DISTINCT ?label ?topic ?description ?description_md ?uri
+SELECT DISTINCT ?label ?topic ?description ?description_md ?uri 
 WHERE {
-    ?geo ?match <http://statistics.data.gov.uk/id/statistical-geography/${code}> .
-    ?geo_uri rdfs:label "Statistical Geography"@en .
-    ?obs rdf:type qb:Observation ;
-          ?geo_uri ?geo ;
-          qb:dataSet ?datasetUri .
-    ?uri pmdcat:datasetContents ?datasetUri ;
-          dcat:keyword "subnational"@en ;
-          rdfs:label ?label ;
-          rdfs:comment ?description ;
-          pmdcat:markdownDescription ?description_md ;
-          dcat:theme ?topicUri .
-    ?topicUri rdfs:label ?topic .
-  FILTER (?match in (skos:exactMatch, owl:sameAs))
+?geo ?match <http://statistics.data.gov.uk/id/statistical-geography/${code}> .
+{
+  {?geo_uri rdfs:subPropertyOf sdmx-d:refArea . }
+  UNION
+  {?geo_uri rdfs:label "Statistical Geography"@en .}
+}
+?obs rdf:type qb:Observation ;
+?geo_uri ?geo ;
+  qb:dataSet ?datasetUri .
+?uri pmdcat:datasetContents ?datasetUri ;
+  dcat:keyword "subnational"@en ;
+  rdfs:label ?label ;
+  rdfs:comment ?description ;
+  pmdcat:markdownDescription ?description_md ;
+  dcat:theme ?topicUri .
+?topicUri rdfs:label ?topic .
+FILTER (?match in (skos:exactMatch, owl:sameAs))
 }`);
   const url = `${api}?query=${sparql}`;
   const datasets = csvParse(await (await fetch(url)).text(), (row) => {
