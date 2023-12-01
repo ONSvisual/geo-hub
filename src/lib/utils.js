@@ -96,6 +96,12 @@ export function filterLinks(links, place) {
 }
 
 export function parseTemplate(template, place) {
+  const getProp = (key) => {
+    const val = place[key];
+    if (key === "groupcd" && val === "ltla") return "lad"; // Hack for LTLA issue on Census Maps links
+    return val;
+  }
+
   let output = template;
   let strs = template.match(new RegExp(/\{(.*?)\}/g));
 
@@ -105,7 +111,7 @@ export function parseTemplate(template, place) {
         let context = s.slice(1,-1).split(",")[1];
         output = output.replace(s, `${getName(place, context, "prefix")} <strong>${getName(place)}</strong>`);
       } else {
-        output = output.replace(s, place[s.slice(1,-1)]);
+        output = output.replace(s, getProp(s.slice(1,-1)));
       }
     });
   }
