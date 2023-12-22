@@ -157,7 +157,6 @@ FILTER (?match in (skos:exactMatch, owl:sameAs))
     const datasets = csvParse(datasets_raw)
       .filter(row => row.topic !== "Climate Change")
       .map(row => {
-        console.log(row.description_md);
         const source_str = row.description_md
           .match(/(?<=###\sSource\n\n)(.*?)(?=\n\n)/s)?.[0]
           ?.replace(/\(.*?\)|\[|\]/gm, "") || null;

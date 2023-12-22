@@ -75,7 +75,6 @@
             places.push({areacd: code, areanm: name, typenm: g.label.replace("/unitary", "")});
           }
         });
-				console.log(json.result, places);
 				if (places[0]) {
 					placeholder = "Type a place name or postcode";
           dispatch("select", {type: "postcode", areacd: null, postcd: json.result.postcode, places});
