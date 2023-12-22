@@ -22,7 +22,7 @@
 </script>
 
 <AnalyticsBanner {analyticsId} {analyticsProps}/>
-<PhaseBanner url="https://www.surveymonkey.co.uk/r/2SGF6X2"/>
+<PhaseBanner url="https://www.ons.gov.uk/feedback"/>
 <ONSHeader {lang}/>
 <CensusBanner/>
 
