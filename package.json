@@ -4,12 +4,9 @@
   "homepage": "http://onsvisual.github.io/sk-ons-template",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
-    "build-ons": "set PUBLIC_APP_PATH=ons && vite build && node ./scripts/js-fix && node ./scripts/gen-sitemap",
-    "build-ons-unix": "PUBLIC_APP_PATH=ons vite build && node ./scripts/js-fix && node ./scripts/gen-sitemap",
-    "build-preview": "set PUBLIC_APP_PATH=github && vite build",
+    "build": "vite build && node ./scripts/js-fix && node ./scripts/gen-sitemap",
+    "build:preview": "cross-env PUBLIC_APP_PATH=github vite build",
     "preview": "vite preview",
-    "preview-ons": "set PUBLIC_APP_PATH=ons && vite preview",
     "preview-ons-unix": "PUBLIC_APP_PATH=ons vite preview",
     "deploy": "gh-pages -d build -t true"
   },
@@ -19,6 +16,7 @@
     "@sveltejs/adapter-static": "^2.0.3",
     "@sveltejs/kit": "^1.25.0",
     "@types/d3-dsv": "^3.0.0",
+    "cross-env": "^7.0.3",
     "d3-dsv": "^3.0.1",
     "d3-format": "^3.1.0",
     "d3-scale": "^4.0.2",

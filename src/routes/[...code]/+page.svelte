@@ -1,5 +1,5 @@
 <script>
-	import { onMount } from "svelte";
+	// import { onMount } from "svelte";
 	import { afterNavigate, goto } from "$app/navigation";
 	import { base } from "$app/paths";
 	import { page } from "$app/stores";
@@ -57,7 +57,8 @@
 		}
 		if (!place) {
 			goto(`${base}/`);
-		} else if (place && place.childTypes[0]) {
+			return;
+		} else if (place?.childTypes?.[0]) {
 			if (!place.childTypes.includes(childType))
 				childType = place.childTypes[0];
 		} else {
@@ -66,8 +67,9 @@
 		if (place) {
 			const newDatasets = await getDatasets(place.areacd);
 			topics = newDatasets.topics;
-			topic = topics?.[0];
+			topic = topics?.[0] || null;
 			datasets = newDatasets.datasets;
+			console.log("datasets", newDatasets);
 		} else {
 			topics = null, topic = null, datasets = null;
 		}
@@ -94,7 +96,7 @@
 		postcode = null;
 		childrenExpanded = false;
 	}
-	onMount(pageLoad);
+	// onMount(pageLoad);
 	afterNavigate(pageLoad);
 
 	// DOM Elements

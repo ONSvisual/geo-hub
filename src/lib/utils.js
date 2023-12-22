@@ -41,6 +41,7 @@ function makeChildTypes(childcds) {
 }
 
 export async function getPlace(code, fetch = window.fetch) {
+  if (!code.match(/[EKNSW]\d{8}\b/)) return {place: null, type: null, geometry: null};
   try {
 		let typeCode = code.slice(0, 3);
 		let res = await fetch(`${cdnUrl}/${typeCode}/${code}.json`);
@@ -56,7 +57,7 @@ export async function getPlace(code, fetch = window.fetch) {
 	}
   catch (err) {
     console.debug(err);
-    return {place: null, type: null};
+    return {place: null, type: null, geometry: null};
   }
 }
 
@@ -120,8 +121,9 @@ export function parseTemplate(template, place) {
 }
 
 export async function getDatasets(code, fetch = window.fetch) {
-  const api = "https://beta.gss-data.org.uk/sparql";
-  const sparql = encodeURIComponent(`PREFIX owl: <http://www.w3.org/2002/07/owl#>
+  try {
+    const api = "https://beta.gss-data.org.uk/sparql";
+    const sparql = encodeURIComponent(`PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 PREFIX qb: <http://purl.org/linked-data/cube#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -150,20 +152,29 @@ WHERE {
 ?topicUri rdfs:label ?topic .
 FILTER (?match in (skos:exactMatch, owl:sameAs))
 }`);
-  const url = `${api}?query=${sparql}`;
-  const datasets = csvParse(await (await fetch(url)).text(), (row) => {
-    const source_str = row.description_md
-      .match(/(?<=###\sSource\n\n)(.*?)(?=\n\n)/s)?.[0]
-      ?.replace(/\(.*?\)|\[|\]/gm, "") || null;
-    row.sources = source_str.match(/(?<=:\s)(.*?)(?=\s$)/gm);
-    return row;
-  });
-  if (!datasets[0]) return {topics: null, datasets: null};
-  datasets.sort((a, b) => a.label.localeCompare(b.label));
-  const topics = Array.from(new Set(datasets.map(d => d.topic)))
-    .sort((a, b) => a.localeCompare(b))
-    .map(t => ({key: slugify(t), label: t}));
-  return {topics, datasets};
+    const url = `${api}?query=${sparql}`;
+    const datasets_raw = await (await fetch(url)).text();
+    const datasets = csvParse(datasets_raw)
+      .filter(row => row.topic !== "Climate Change")
+      .map(row => {
+        console.log(row.description_md);
+        const source_str = row.description_md
+          .match(/(?<=###\sSource\n\n)(.*?)(?=\n\n)/s)?.[0]
+          ?.replace(/\(.*?\)|\[|\]/gm, "") || null;
+        row.sources = typeof source_str === "string" ? source_str.match(/(?<=:\s)(.*?)(?=\s$)/gm) : [];
+        return row;
+      });
+    if (!datasets?.[0]) return {topics: null, datasets: null};
+    datasets.sort((a, b) => a.label.localeCompare(b.label));
+    const topics = Array.from(new Set(datasets.map(d => d.topic)))
+      .sort((a, b) => a.localeCompare(b))
+      .map(t => ({key: slugify(t), label: t}));
+    return {topics, datasets};
+  }
+  catch (err) {
+    console.debug(err);
+    return {topics: null, datasets: null};
+  }
 }
 
 export function addArticle(str) {

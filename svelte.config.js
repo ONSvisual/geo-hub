@@ -2,8 +2,7 @@
 import adapter from '@sveltejs/adapter-static';
 
 const production = process.env.NODE_ENV === 'production';
-const ons_build = process.env.PUBLIC_APP_PATH && process.env.PUBLIC_APP_PATH.includes('ons');
-const static_build = process.env.PUBLIC_APP_PATH && process.env.PUBLIC_APP_PATH.includes('github');
+const preview = process.env.PUBLIC_APP_PATH && process.env.PUBLIC_APP_PATH.includes('github');
 
 const config = {
 	kit: {
@@ -12,14 +11,14 @@ const config = {
 			// Options below are defaults
 			pages: 'build',
 			assets: 'build',
-			fallback: production && !ons_build && !static_build ? '404.html' : null
+			fallback: production && preview ? '404.html' : null
 		}),
 		prerender: {
 			handleHttpError: 'warn'
 		},
 		paths: {
 			// assets: production && ons_build ? 'https://www.ons.gov.uk/visualisations/areas' : null,
-			base: production && ons_build ? '/visualisations/areas' : production ? '/geo-hub' : '',
+			base: production && preview ? '/geo-hub' : production ? '/visualisations/areas' : '',
 			relative: false
 		}
 	}
