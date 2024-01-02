@@ -64,6 +64,7 @@
 		} else {
 			childType = null;
 		}
+		if (place && map) map.fitBounds(place.bounds, { padding: 20 });
 		if (place) {
 			const newDatasets = await getDatasets(place.areacd);
 			topics = newDatasets.topics;
@@ -73,7 +74,6 @@
 		} else {
 			topics = null, topic = null, datasets = null;
 		}
-		if (place && map) map.fitBounds(place.bounds, { padding: 20 });
 
 		if (firstLoad) {
 			firstLoad = false; // Prevents double-firing of analyics event on first load
