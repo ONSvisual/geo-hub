@@ -1,11 +1,9 @@
 <script>
+  import "@onsvisual/svelte-components/css/main.css";
   import "../app.css";
   import { page } from '$app/stores';
-  import PhaseBanner from "$lib/layout/PhaseBanner.svelte";
-	import ONSFooter from "$lib/layout/ONSFooter.svelte";
-  import AnalyticsBanner from "$lib/layout/AnalyticsBanner.svelte";
-  import ONSHeader from "$lib/layout/ONSHeader.svelte";
-  import CensusBanner from "$lib/layout/CensusBanner.svelte";
+  import { PhaseBanner, AnalyticsBanner, Header, Main, Footer } from "@onsvisual/svelte-components";
+  // import CensusBanner from "$lib/layout/CensusBanner.svelte";
 	
   // For localisation of menu etc
   $: lang = $page.url.hostname.split(".")[0] === "cy" ? "cy" : "en";
@@ -22,15 +20,15 @@
 </script>
 
 <AnalyticsBanner {analyticsId} {analyticsProps}/>
-<PhaseBanner url="https://www.ons.gov.uk/feedback"/>
-<ONSHeader {lang}/>
-<CensusBanner/>
+<PhaseBanner phase="Beta"/>
+<Header {lang}/>
+<!-- <CensusBanner/> -->
 
-<main id="main" tabindex="-1">
+<Main>
   <slot/>
-</main>
+</Main>
 
-<ONSFooter/>
+<Footer theme="dark"/>
 
 <style>
   h1 {

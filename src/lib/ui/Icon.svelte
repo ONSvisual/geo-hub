@@ -39,8 +39,9 @@
     aria-hidden="true"
     focusable="false"
     {style}
-    class:margin
-    class:noclick={!clickable}>
+    class:margin={margin === true}
+    class:noclick={!clickable}
+    style:margin={typeof margin === "number" ? `${margin}px` : typeof margin === "string" ? margin : null}>
     <path d={paths[type]}></path>
   </svg>
   

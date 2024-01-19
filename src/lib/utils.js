@@ -52,7 +52,7 @@ export async function getPlace(code, fetch = window.fetch) {
     return {
       place: json.properties,
       type: geoCodesLookup[typeCode],
-      geometry: json.properties.end ? json.geometry : null,
+      geometry: json.geometry,
     };
 	}
   catch (err) {
@@ -63,7 +63,7 @@ export async function getPlace(code, fetch = window.fetch) {
 
 const validYear = (place, year) => !year || ((!place.start || year > place.start) && (!place.end || year <= place.end));
 
-export function getParent(link, place) {
+export function getParent(place, geocodes, year = null) {
   const parents = [...place.parents];
   if (["E", "W"].includes(place.areacd[0])) parents.push({
     areacd: "K04000001",
@@ -71,7 +71,7 @@ export function getParent(link, place) {
   });
   for (const parent of parents) {
     let typecd = parent.areacd.slice(0, 3);
-    if (link.geocodes.includes(typecd) && validYear(parent, link.year)) {
+    if (geocodes.includes(typecd) && validYear(parent, year)) {
       parent.groupcd = geoCodesLookup[typecd]?.key ? geoCodesLookup[typecd].key : "ew";
       return parent;
     };
@@ -83,14 +83,14 @@ export function filterLinks(links, place) {
   let thislinks = [];
   let parentlinks = [];
   links.forEach(l => {
-    let parent = getParent(l, place);
+    let parent = getParent(place, l.geocodes, l.year);
     if (
       l.geocodes.includes(place.typecd)
       && validYear(place, l.year)
     ) {
       thislinks.push({...l, place});
     } else if (parent) {
-      parentlinks.push({...l, place: getParent(l, place)});
+      parentlinks.push({...l, place: getParent(place, l.geocodes, l.year)});
     }
   });
   return [...thislinks, ...parentlinks];
@@ -191,11 +191,11 @@ export function addArticle(str) {
 }
 
 export function makePath(code) {
-  if (!noIndex.includes(code.slice(0, 3))) {
-    return code + "/";
-  } else {
-    return "area/?code=" + code;
-  }
+  // if (!noIndex.includes(code.slice(0, 3))) {
+    return `areas/${code}/`;
+  // } else {
+  //   return "area/?code=" + code;
+  // }
 }
 
 export function filterChildren(place, type) {
@@ -255,6 +255,6 @@ export function isNA(arr) {
 }
 
 export function pluralise(str) {
-  if (str.slice(-1) === "y") return str.slice(0, -1) + "ies";
+  if (str.slice(-1) === "y" && str.slice(-2) !== "ey") return str.slice(0, -1) + "ies";
   else return str + "s";
 }

@@ -7,10 +7,15 @@ import { base } from "$app/paths";
 import { getData } from "$lib/utils";
   
 export async function load({ fetch }) {
-  let links = await getData(`${base}/data/csv/links.csv`, fetch);
+  const links = await getData(`${base}/data/csv/links.csv`, fetch);
   links.forEach((link, i) => {
     if (link.image && !link.image.startsWith("http")) links[i].image = base + link.image;
   });
 
-	return { links };
+  const indicators = (await getData(`${base}/data/csv/indicators.csv`, fetch))
+    .sort((a, b) => a.label.localeCompare(b.label));
+  const topics = Array.from(new Set(indicators.map(ind => ind.topic)))
+    .sort((a, b) => a.localeCompare(b));
+
+	return { links, topics, indicators };
 }

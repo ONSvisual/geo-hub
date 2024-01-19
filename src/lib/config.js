@@ -15,6 +15,7 @@ export const geoNames = {
 };
 
 export const noIndex = ["E00", "W00", "E01", "W01", "E02", "W02", "E04", "W04", "E05", "W05"];
+export const essGeocodes = ["E06", "E07", "E08", "E09", "E10", "E12", "E47", "E92", "N09", "N92", "S12", "S92", "W06", "W92"];
 
 export const sources = [
   {id: "uk", type: "geojson"},

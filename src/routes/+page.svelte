@@ -3,15 +3,14 @@
 	import { base } from "$app/paths";
 	import { assets, geoCodesLookup } from "$lib/config";
 	import { makePath } from "$lib/utils";
-  import { analyticsEvent } from "$lib/layout/AnalyticsBanner.svelte";
-
-	import Titleblock from "$lib/layout/Titleblock.svelte";
-	import Headline from "$lib/layout/partial/Headline.svelte";
+  import { Breadcrumb, Titleblock, Section, analyticsEvent } from "@onsvisual/svelte-components";
 	import Subhead from "$lib/layout/partial/Subhead.svelte";
-  import Article from "$lib/layout/Article.svelte";
-	import Select from "$lib/ui/Select.svelte";
+  import Select from "$lib/ui/Select.svelte";
   import AreaList from "$lib/ui/AreaList.svelte";
 	import Icon from "$lib/ui/Icon.svelte";
+  import Indicators from "$lib/layout/Indicators.svelte";
+
+  export let data;
 
   let postcode = null;
 
@@ -45,36 +44,30 @@
 	<meta property="og:description" content="Get data about people and the communities they live in, includes population, economy and health." />
 </svelte:head>
 
-<Titleblock
-	breadcrumb="{[{label: 'Home', url: '/', refresh: true}, {label: 'Find a geographic area'}]}">
-	<Headline>Find facts and figures about areas in the United Kingdom</Headline>
-  <Subhead>Get data about people and the communities they live in, including population, identity, housing, people in or out of work, education and health.</Subhead>
+<Breadcrumb links={[{label: 'Home', href: '/', refresh: true}, {label: 'Explore local statistics'}]} background="#eaeaea"/>
+<Titleblock title="Explore local statistics" background="#eaeaea">
+  <Subhead>Find, visualise, compare and download statistics for areas within the United Kingdom.</Subhead>
 </Titleblock>
-<Article>
+<Section title="Find a local area" theme="dark" background="#206095" marginTop>
   <p>
     You can find information about your area, local authority, combined authority, ward, parish or parliamentary constituency.
   </p>
 
   <label for="search" class="lbl-search">
-    <strong>Search by area name or postcode</strong><br/>
-    For example, “Titchfield” or “PO15 5RR”
+    <strong>Search by area name or postcode</strong>
   </label>
-  <Select id="search" mode="search" idKey="areacd" labelKey="areanm" groupKey="group" autoClear on:select={navTo}/>
+  <Select id="search" mode="search" idKey="areacd" labelKey="areanm" groupKey="group" placeholder="Eg. Titchfield, or PO15 5RR" autoClear on:select={navTo}/>
 
   {#if postcode}
   <AreaList {postcode} on:clear={() => postcode = null}/>
   {/if}
 
-  <p>
-    If you do not know the name of the area or postcode you can start your search from <a href="{base}/E92000001/">England</a>, <a href="{base}/W92000004/">Wales</a>, <a href="{base}/S92000003/">Scotland</a> or <a href="{base}/N92000002/">Northern Ireland</a>.
+  <p style:margin-top="24px">
+    If you do not know the name of the area or postcode you can start your search from <a href="{base}/areas/E92000001/">England</a>, <a href="{base}/areas/W92000004/">Wales</a>, <a href="{base}/areas/S92000003/">Scotland</a> or <a href="{base}/areas/N92000002/">Northern Ireland</a>.
   </p>
-
-  <h2 class="heading-bold heading-overline">Labour market and population data</h2>
-  <p>
-    Some specialist data are also published on Nomis, an Office for National Statistics service. Find out how to get <a href="https://www.ons.gov.uk/help/localstatistics">labour market and population data for areas within the UK</a>.
-  </p>
-
-  <h2 class="heading-bold heading-overline">Other sources of statistics</h2>
+</Section>
+<Indicators {data}/>
+<Section title="Other sources of statistics" marginTop>
   <p>
     Scotland and Northern Ireland have their own agencies who produce official statistics. View facts and figures for areas in:
   </p>
@@ -87,4 +80,12 @@
   <p>
     Some data about Wales is also published on the <a href="https://statswales.gov.wales/Catalogue" target="_blank" rel="noreferrer">Stats Wales website</a> <span class="inline-icon"><Icon type="launch"/>
   </p>
-</Article>
+</Section>
+<Section title="About these pages">
+  <p>
+    These pages are maintained by the Explore Subnational Statistics (ESS) service. The ESS service is part of the GSS subnational data strategy, which provides a framework to guide the UK Government Statistical Service (GSS) in producing and disseminating subnational statistics in a more timely, granular and harmonised way.
+  </p>
+  <p>
+    Specifically, ESS aims to provide one place for users to find, visualise, compare and download subnational statistics by standardised geographies and customer-defined areas.
+  </p>
+</Section>
