@@ -1,17 +1,22 @@
 <script>
   import { base } from "$app/paths";
+  import { beforeNavigate } from "$app/navigation";
   import { capitalise } from "@onsvisual/robo-utils";
   import { Section, Button } from "@onsvisual/svelte-components";
   import Icon from "$lib/ui/Icon.svelte";
 
   export let data;
+  export let compact = false;
+  export let title = "Fina a dataset";
 
   let open = false;
+
+  beforeNavigate(() => open = false);
 </script>
 
-<Section title="Find an indicator" theme="dark" background="#003c57" width="wide" marginTop>
+<Section {title} theme="dark" background="#003c57" width="wide" marginTop>
   {#each data.topics as topic, i}
-  <div class:visuallyhidden={!(open || i === 0)}>
+  <div class:visuallyhidden={!(open || (!compact && i === 0))}>
     <h3 class="title-indicators">{capitalise(topic)}</h3>
     <ul class="list-columns list-indicators">
       {#each data.indicators.filter(ind => ind.topic === topic) as ind}
@@ -27,7 +32,7 @@
   </div>
   {/each}
   <Button variant="ghost" on:click={() => open = !open} small>
-    {open ? "Show fewer indicators" : `Show all ${data.indicators.length} indiators`}
+    {compact && open ? "Hide indicators" : compact ? "Show indicators" : open ? "Show fewer indicators" : `Show all ${data.indicators.length} indiators`}
     <Icon type="chevron" rotation={open ? 90 : -90}/>
   </Button>
 </Section>

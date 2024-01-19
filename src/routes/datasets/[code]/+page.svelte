@@ -2,6 +2,7 @@
   import { base } from "$app/paths";
   import { Breadcrumb, Titleblock, NavSections, NavSection } from "@onsvisual/svelte-components";
   import Subhead from "$lib/layout/partial/Subhead.svelte";
+  import Indicators from "$lib/layout/Indicators.svelte";
 
   export let data;
 </script>
@@ -21,6 +22,8 @@
     {data.indicator.subtitle}.
 	</Subhead>
 </Titleblock>
+
+<Indicators {data} title="Find another dataset" compact/>
 
 <NavSections contentsLabel="Data for this area" marginTop>
   {#each ["Map", "Timeseries", "Beeswarm", "Table", "Get the data"] as section}
