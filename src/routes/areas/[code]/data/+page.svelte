@@ -80,7 +80,7 @@
     <Button variant="secondary" icon="arrow" iconPosition="after" href="{base}/{makePath(place.areacd)}" small>Read more</Button>
   </Card>
   <Card title="Data for other areas">
-    <Select id="search" mode="search" idKey="areacd" labelKey="areanm" groupKey="group" label="Type an area name or postcode" placeholder="Eg. Titchfield or PO15 5RR" autoClear on:select={navTo}/>
+    <Select id="search" mode="search" idKey="areacd" labelKey="areanm" groupKey="group" label="Type a place name or postcode" placeholder="Eg. Titchfield or PO15 5RR" autoClear on:select={navTo}/>
 		{#if postcode}
 		<AreaList {postcode} on:clear={() => postcode = null}/>
 		{/if}

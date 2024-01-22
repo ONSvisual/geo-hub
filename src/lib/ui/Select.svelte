@@ -26,7 +26,7 @@
 
 	export let id = "";
 	export let mode = "search";
-	export let placeholder = "Type an area name or postcode";
+	export let placeholder = "Type a place name or postcode";
 	export let filterText = "";
 	export let label = null;
 	export let hideLabel = false;

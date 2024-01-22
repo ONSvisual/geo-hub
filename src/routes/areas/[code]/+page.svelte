@@ -240,7 +240,7 @@
 		{/if}
 	</Card>
 	<Card title="Find another area">
-		<Select id="search" mode="search" idKey="areacd" labelKey="areanm" groupKey="group" label="Find another area" placeholder="Eg. Titchfield or PO15 5RR" hideLabel autoClear on:select={navTo}/>
+		<Select id="search" mode="search" idKey="areacd" labelKey="areanm" groupKey="group" label="Type a place name or postcode" placeholder="Eg. Titchfield or PO15 5RR" autoClear on:select={navTo}/>
 		{#if postcode}
 		<AreaList {postcode} on:clear={() => postcode = null}/>
 		{/if}

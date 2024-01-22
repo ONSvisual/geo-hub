@@ -54,7 +54,7 @@
   </p>
 
   <label for="search" class="lbl-search">
-    <strong>Search by area name or postcode</strong>
+    <strong>Search by place name or postcode</strong>
   </label>
   <Select id="search" mode="search" idKey="areacd" labelKey="areanm" groupKey="group" placeholder="Eg. Titchfield, or PO15 5RR" autoClear on:select={navTo}/>
 
