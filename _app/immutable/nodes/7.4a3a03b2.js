@@ -1,1 +1,0 @@
-import{r as e}from"../chunks/index.c6708bed.js";import{b as o}from"../chunks/paths.5d04170c.js";async function r(){throw e(301,`${o}/`)}const n=Object.freeze(Object.defineProperty({__proto__:null,load:r},Symbol.toStringTag,{value:"Module"}));export{n as universal};
