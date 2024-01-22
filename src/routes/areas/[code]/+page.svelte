@@ -165,7 +165,7 @@
 <Cards title="Areas in {["K02", "E92", "N92", "S92", "W92"].includes(place.typecd) ? '' : 'and around'} {getName(place, "the")}" id="related" height="auto" marginTop>
 	<Card colspan={2} rowspan={2} noBackground>
 		<div style:height="450px">
-			<Map bind:map style="{base}/data/mapstyle.json" location={{bounds: place.bounds}} options={{fitBoundsOptions: {padding: 20}, maxBounds: [-19, 48, 12, 62]}} controls>
+			<Map bind:map style="{base}/data/mapstyle.json" location={{bounds: place.bounds}} options={{fitBoundsOptions: {padding: 20}, maxBounds: [-19, 48, 12, 62], cooperativeGestures: true}} controls>
 				{#each mapSources as s}
 				<MapSource
 					id={s.id}
