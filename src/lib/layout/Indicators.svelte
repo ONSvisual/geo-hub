@@ -32,7 +32,7 @@
   </div>
   {/each}
   <Button variant="ghost" on:click={() => open = !open} small>
-    {compact && open ? "Hide indicators" : compact ? "Show indicators" : open ? "Show fewer indicators" : `Show all ${data.indicators.length} indiators`}
+    {compact && open ? "Hide datasets" : compact ? "Show datasets" : open ? "Show fewer datasets" : `Show all ${data.indicators.length} datasets`}
     <Icon type="chevron" rotation={open ? 90 : -90}/>
   </Button>
 </Section>

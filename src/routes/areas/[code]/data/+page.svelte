@@ -35,8 +35,6 @@
     geometry = data.geometry;
   }
   afterNavigate(pageLoad);
-
-  $: console.log(data);
 </script>
 
 {#if place}

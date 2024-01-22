@@ -105,7 +105,6 @@
 	}
 
 	$: productLinks = place ? filterLinks(links, place) : [];
-	$: console.log("place", place);
 </script>
 
 <svelte:head>
