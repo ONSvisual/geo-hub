@@ -15,8 +15,8 @@
     padding: 8px;
   }
   h3.content-subhead {
-    display: inline-block;
     font-size: 18px;
+    margin-bottom: 8px;
   }
   h3.content-subhead > span {
     font-size: 16px;

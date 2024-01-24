@@ -62,14 +62,14 @@
 <NavSections contentsLabel="Data for this area" marginTop>
   <NavSection title="Map">
     <ContentBlock title={data.indicator.label} unit={getUnit(data.indicator)}>
-      <Dropdown options={data.years} bind:value={year} on:change={refreshData}/>
+      <Dropdown id="year" options={data.years} width={10} bind:value={year} on:change={refreshData}/>
       <Dropdown options={data.geos.groups} bind:value={geoGroup} on:change={refreshData}/>
       <Map data={mapData.data} breaks={mapData.breaks} codes={mapData.codes} features={data.features} {selected} on:select={doSelect}/>
     </ContentBlock>
   </NavSection>
   <NavSection title="Beeswarm">
     <ContentBlock title={data.indicator.label} unit={getUnit(data.indicator)}>
-      <Dropdown options={data.years} bind:value={year} on:change={refreshData}/>
+      <Dropdown id="year" options={data.years} bind:value={year} on:change={refreshData}/>
       <Dropdown options={data.geos.groups} bind:value={geoGroup} on:change={refreshData}/>
       {#key mapData}
       <ScatterChart data={mapData.data} xKey="value" idKey="areacd" labelKey="areanm" color="lightgrey" colorSelect="#206095" height={500} yFitBeeswarm overlayFill hover labels select {selected} on:select={doSelect}/>
@@ -103,5 +103,15 @@
 <style>
   :global(div.ons-grid__col > section:first-of-type > h2) {
     margin-top: 0 !important;
+  }
+  :global(.ons-field) {
+    display: inline-block;
+    margin: 0 4px 8px 0 !important;
+  }
+  :global(select.ons-input--select) {
+    width: 260px !important;
+  }
+  :global(select#year) {
+    width: 90px !important;
   }
 </style>
