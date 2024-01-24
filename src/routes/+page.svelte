@@ -4,9 +4,9 @@
 	import { assets, geoCodesLookup } from "$lib/config";
 	import { makePath } from "$lib/utils";
   import { Breadcrumb, Titleblock, Section, analyticsEvent } from "@onsvisual/svelte-components";
-	import Subhead from "$lib/layout/partial/Subhead.svelte";
+	import Subhead from "$lib/layout/Subhead.svelte";
   import Select from "$lib/ui/Select.svelte";
-  import AreaList from "$lib/ui/AreaList.svelte";
+  import AreaList from "$lib/layout/AreaList.svelte";
 	import Icon from "$lib/ui/Icon.svelte";
   import Indicators from "$lib/layout/Indicators.svelte";
 

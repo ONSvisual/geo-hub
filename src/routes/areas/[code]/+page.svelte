@@ -24,9 +24,9 @@
 	import topojson from "$lib/data/uk-ctry-rgn.json";
 
 	import { Breadcrumb, Titleblock, Section, Cards, Card, Button, analyticsEvent } from "@onsvisual/svelte-components";
-	import Subhead from "$lib/layout/partial/Subhead.svelte";
+	import Subhead from "$lib/layout/Subhead.svelte";
 	import Select from "$lib/ui/Select.svelte";
-	import AreaList from "$lib/ui/AreaList.svelte";
+	import AreaList from "$lib/layout/AreaList.svelte";
 	import Icon from "$lib/ui/Icon.svelte";
 	import { Map, MapSource, MapLayer } from "@onsvisual/svelte-maps";
 	import MapTooltip from "@onsvisual/svelte-maps/src/MapTooltip.svelte";

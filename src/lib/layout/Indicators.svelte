@@ -7,7 +7,7 @@
 
   export let data;
   export let compact = false;
-  export let title = "Fina a dataset";
+  export let title = "Find a dataset";
 
   let open = false;
 
