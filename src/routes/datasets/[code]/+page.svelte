@@ -25,6 +25,7 @@
     mapData = geoGroup?.codes && year ? makeMapData(data.data, geoGroup?.codes, year) : {data: [], breaks: []};
     pivotedData = geoGroup?.codes ? pivotData(data.data, geoGroup?.codes) : [];
   }
+  $: console.log(mapData);
 
   afterNavigate(() => {
     geoGroup = data.geos.groups[data.geos.groups.length - 1];

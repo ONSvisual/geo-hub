@@ -1,13 +1,18 @@
 <script>
+	import { createEventDispatcher } from "svelte";
+	
+	export let data;
 	export let hovered = null;
 	export let selected = null;
 	export let lineWidth = 3;
-	export let height = 12;
-	export let breaks = [0,20,40,60,80,100];
+	export let height = 15;
+	export let breaks;
 	export let colors = ['rgba(234,236,177,.8)', 'rgba(169,216,145,.8)', 'rgba(0,167,186,.8)', 'rgba(0,78,166,.8)', 'rgba(0,13,84,.8)'];
   export let formatTick = d => d.toFixed(0);
   export let suffix = "";
 	export let snapTicks = true;
+
+	const dispatch = createEventDispatcher();
 	
 	const pos = (val, breaks) => {
 		let i = 0;
@@ -16,71 +21,97 @@
 		let offset = (val - breaks[i]) / (breaks[i + 1] - breaks[i]);
 		return (i + offset) * unit;
 	}
+
+	const doHover = (e, d = null) => {
+		if (d === null) hovered = null;
+		else hovered = d.areacd;
+		dispatch("hover", {id: hovered, d, e});
+	}
+
+	const doSelect = (e, d) => {
+		selected = d.areacd;
+		dispatch("select", {id: selected, d, e});
+	}
+
+	const makeCells = (data) => {
+		const sortIndex = Array.from(data.keys()).sort((a, b) => data[a] - data[b]);
+		const reverseIndex = Array.from(data.keys()).map(i => sortIndex.indexOf(i));
+		const cells = sortIndex.map((i) => data[i]).map((d, i, arr) => {
+			const prev = i === 0 ? d : (d + arr[i - 1]) / 2;
+			const next = i === arr.length - 1 ? d : (d + arr[i + 1]) / 2;
+			return [prev, next];
+		});
+		return reverseIndex.map(i => cells[i]);
+	};
+
+	$: cells = makeCells(data.map(d => d.value));
 </script>
 
-<div class="breaks-container" style="height: {height}px">
+<div class="container" style="height: {height}px" on:mouseleave={doHover}>
 	{#each breaks.slice(1) as brk, i}
-		<div class="breaks-block" style="width: {100 / (breaks.length - 1)}%; left: {i * (100 / (breaks.length - 1))}%; background-color: {colors[i]};"/>
-		<div class="breaks-line" style="left: {i * (100 / (breaks.length - 1))}%;"/>
-		<div class="breaks-tick" style="left: {i * (100 / (breaks.length - 1))}%; transform: translateX({i == 0 && snapTicks ? '-2px' : '-50%'});">{formatTick(breaks[i])}</div>
+		<div class="block" style="width: {100 / (breaks.length - 1)}%; left: {i * (100 / (breaks.length - 1))}%; background-color: {colors[i]};"/>
+		<div class="line" style="left: {i * (100 / (breaks.length - 1))}%;"/>
+		<div class="tick" style="left: {i * (100 / (breaks.length - 1))}%; transform: translateX({i == 0 && snapTicks ? '-2px' : '-50%'});">{formatTick(breaks[i])}</div>
 	{/each}
-	<div class="breaks-line" style="right: 0;"/>
-	<div class="breaks-tick" style="right: 0; transform: translateX({snapTicks ? '2px' : '50%'});">{formatTick(breaks[breaks.length - 1])}{suffix}</div>
-	{#if selected}
-	<div class="breaks-marker" style="width: {lineWidth}px; left: calc({pos(selected, breaks)}% - {lineWidth / 2}px);"/>
-	<div class="breaks-value" style="left: {pos(selected, breaks)}%">{selected}{suffix}</div>
-  {/if}
-  {#if hovered}
-	<div class="breaks-marker breaks-marker-hovered" style="width: {lineWidth}px; left: calc({pos(hovered, breaks)}% - {lineWidth / 2}px);"/>
-	<div class="breaks-value breaks-value-hovered" style="left: {pos(hovered, breaks)}%">{hovered}{suffix}</div>
-  {/if}
+	<div class="line" style="right: 0;"/>
+	<div class="tick" style="right: 0; transform: translateX({snapTicks ? '2px' : '50%'});">{formatTick(breaks[breaks.length - 1])}{suffix}</div>
+	{#each data as d, i (d.areacd)}
+		<div class="block" style:width="{pos(cells[i][1], breaks) - pos(cells[i][0], breaks)}%" style:left="{pos(cells[i][0], breaks)}%" on:mouseenter={(e) => doHover(e, d)} on:click={(e) => doSelect(e, d)}/>
+		{#if hovered === d.areacd}
+			<div class="marker marker-hovered" style="width: {lineWidth}px; left: calc({pos(d.value, breaks)}% - {lineWidth / 2}px);"/>
+			<div class="value value-hovered" style="left: {pos(d.value, breaks)}%">{d.value}{suffix}</div>
+		{:else if selected === d.areacd}
+			<div class="marker" style="width: {lineWidth}px; left: calc({pos(d.value, breaks)}% - {lineWidth / 2}px);"/>
+			<div class="value" style="left: {pos(d.value, breaks)}%">{d.value}{suffix}</div>
+		{/if}
+	{/each}
 </div>
 
 <style>
-	.breaks-container {
-    display: block;
-		margin: 30px 0 30px 0;
+	.container {
+		margin: 30px 0 24px 0;
 		box-sizing: border-box;
 		position: relative;
 		width: 100%;
-    font-size: 14.4px;
+		font-size: 14px;
 	}
-	.breaks-block {
+	.block {
 		position: absolute;
 		top: 0;
 		height: 100%;
 	}
-	.breaks-line {
+	.line {
 		position: absolute;
 		top: 0;
 		height: calc(100% + 10px);
 		border-left: solid 1px black;
 	}
-	.breaks-tick {
+	.tick {
 		position: absolute;
 		z-index: 1;
 		top: calc(100% + 8px);
 		text-align: center;
 		transform: translateX(-50%);
 	}
-	.breaks-marker {
+	.marker {
 		position: absolute;
 		z-index: 2;
 		top: -10px;
 		height: calc(100% + 10px);
 		background-color: black;
+		pointer-events: none;
 	}
-	.breaks-marker-hovered {
-		background-color: orange;
-	}
-	.breaks-value {
+	.value {
 		position: absolute;
 		top: -32px;
 		text-align: center;
 		transform: translateX(-50%);
 		background-color: rgba(255,255,255,.8);
 	}
-	.breaks-value-hovered {
+	.marker-hovered {
+		background-color: orange;
+	}
+	.value-hovered {
 		color: orange;
 	}
 </style>
