@@ -25,7 +25,6 @@
     mapData = geoGroup?.codes && year ? makeMapData(data.data, geoGroup?.codes, year) : {data: [], breaks: []};
     pivotedData = geoGroup?.codes ? pivotData(data.data, geoGroup?.codes) : [];
   }
-  $: console.log(mapData);
 
   afterNavigate(() => {
     geoGroup = data.geos.groups[data.geos.groups.length - 1];
@@ -62,41 +61,52 @@
 {#if filteredData && mapData && pivotedData}
 <NavSections contentsLabel="Data for this area" marginTop>
   <NavSection title="Map">
-    <ContentBlock title={data.indicator.label} unit={getUnit(data.indicator)}>
-      <Dropdown id="year" options={data.years} width={10} bind:value={year} on:change={refreshData}/>
-      <Dropdown options={data.geos.groups} bind:value={geoGroup} on:change={refreshData}/>
+    <ContentBlock type="map" title={data.indicator.label} unit={getUnit(data.indicator)} data={mapData.data}>
+      <div class="content-dropdowns" data-html2canvas-ignore>
+        <Dropdown options={data.geos.groups} bind:value={geoGroup} on:change={refreshData}/>
+        <Dropdown id="year" options={data.years} width={10} bind:value={year} on:change={refreshData}/>
+      </div>
       <Map data={mapData.data} breaks={mapData.breaks} codes={mapData.codes} features={data.features} unit={getUnit(data.indicator)} {selected} on:select={doSelect}/>
     </ContentBlock>
   </NavSection>
   <NavSection title="Beeswarm">
-    <ContentBlock title={data.indicator.label} unit={getUnit(data.indicator)}>
-      <Dropdown id="year" options={data.years} bind:value={year} on:change={refreshData}/>
-      <Dropdown options={data.geos.groups} bind:value={geoGroup} on:change={refreshData}/>
+    <ContentBlock type="chart" title={data.indicator.label} unit={getUnit(data.indicator)} data={mapData.data}>
+      <div class="content-dropdowns" data-html2canvas-ignore>
+        <Dropdown options={data.geos.groups} bind:value={geoGroup} on:change={refreshData}/>
+        <Dropdown id="year" options={data.years} bind:value={year} on:change={refreshData}/>
+      </div>
       {#key mapData}
       <ScatterChart data={mapData.data} xKey="value" idKey="areacd" labelKey="areanm" color="lightgrey" colorSelect="#206095" height={500} yFitBeeswarm overlayFill hover labels select {selected} on:select={doSelect}/>
       {/key}
     </ContentBlock>
   </NavSection>
-  {#if data.years.length > 1}
   <NavSection title="Timeseries">
-    <ContentBlock title={data.indicator.label} unit={getUnit(data.indicator)}>
-      <Dropdown options={data.geos.groups} bind:value={geoGroup} on:change={refreshData}/>
-      {#key filteredData}
-      <LineChart data={filteredData} xKey="year" yKey="value" zKey="areacd" idKey="areacd" labelKey="areanm" color={pivotedData.length > 40 ? 'rgba(0,0,0,.1)' : 'rgba(0,0,0,.4)'} lineWidth={0.5} height={500} padding={{ top: 20, bottom: 28, left: 35, right: 100 }} yMin={null} hover labels select {selected} on:select={doSelect}/>
-      {/key}
+    <ContentBlock type="chart" title={data.indicator.label} unit={getUnit(data.indicator)} data={pivotedData}>
+      {#if data.years.length > 1}
+        <div class="content-dropdowns" data-html2canvas-ignore>
+          <Dropdown options={data.geos.groups} bind:value={geoGroup} on:change={refreshData}/>
+        </div>
+        {#key filteredData}
+        <LineChart data={filteredData} xKey="year" yKey="value" zKey="areacd" idKey="areacd" labelKey="areanm" color={pivotedData.length > 40 ? 'rgba(0,0,0,.1)' : 'rgba(0,0,0,.4)'} lineWidth={0.5} height={500} padding={{ top: 20, bottom: 28, left: 35, right: 100 }} yMin={null} hover labels select {selected} on:select={doSelect}/>
+        {/key}
+      {:else}
+        <p>Only one year of data is available for this dataset, therefore no timeseries can be displayed.</p>
+      {/if}
     </ContentBlock>
   </NavSection>
-  {/if}
   <NavSection title="Table">
-    <ContentBlock title={data.indicator.label} unit={getUnit(data.indicator)}>
-      <Dropdown options={data.geos.groups} bind:value={geoGroup} on:change={refreshData}/>
+    <ContentBlock type="table" title={data.indicator.label} unit={getUnit(data.indicator)} data={pivotedData}>
+      <div class="content-dropdowns" data-html2canvas-ignore>
+        <Dropdown options={data.geos.groups} bind:value={geoGroup} on:change={refreshData}/>
+      </div>
       {#key pivotedData}
       <Table data={pivotedData} {columns} height={500} stickyHeader compact/>
       {/key}
     </ContentBlock>
   </NavSection>
   <NavSection title="Get the data">
-    <div class="section-placeholder">Placeholder</div>
+    <p>This dataset was produced by the Office for National Statistics. The original source data can be <a href="#0">found here</a>.</p>
+    <p>If you would like a CSV of the data displayed in one of the above charts, you can click the "download data" link immediately below it.</p>
   </NavSection>
 </NavSections>
 {/if}
@@ -106,11 +116,13 @@
     margin-top: 0 !important;
   }
   :global(.ons-field) {
-    display: inline-block;
     margin: 0 4px 8px 0 !important;
   }
+  .content-dropdowns :global(.ons-field) {
+    display: inline-block;
+  }
   :global(select.ons-input--select) {
-    width: 260px !important;
+    max-width: 280px !important;
   }
   :global(select#year) {
     width: 90px !important;

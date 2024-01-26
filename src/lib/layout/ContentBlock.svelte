@@ -1,17 +1,48 @@
 <script>
+  import { page } from "$app/stores";
+  import { downloadCSV, downloadPNG } from "./helpers/content-actions";
+  import { Textarea, Button } from "@onsvisual/svelte-components";
+  import Icon from "$lib/ui/Icon.svelte";
+
   export let title;
   export let unit;
+  export let type = "chart"; // chart, map or table
+  export let data = null;
+
+  let el;
+  let showEmbed = false;
+
+  const clip = (str, msg) => navigator.clipboard.writeText(str).then(() => alert(msg));
+
+  $: embedCode = `<div id="${type}"></div>
+<scr${''}ipt src="https://cdn.ons.gov.uk/vendor/pym/1.3.2/pym.min.js"></scr${''}ipt>
+<scr${''}ipt>var pymParent = new pym.Parent("${type}", "${$page.url.href}embed?type=${type}", {name: "${type}", title: "${title}"});</scr${''}ipt>`;
 </script>
 
-<div class="content-block">
+<div class="content-block" bind:this={el}>
   <h3 class="content-subhead">{title} <span>{unit}</span></h3>
   <slot/>
+</div>
+<div class="content-actions">
+  <h4>Use and share</h4>
+  <ul>
+    {#if type !== "table"}<li><Icon type="chart"/><span><button class="btn-link" on:click={() => downloadPNG(el)}>Download {type} (PNG)</button></span></li>{/if}
+    {#if data}<li><Icon type="download"/><span><button class="btn-link" on:click={() => downloadCSV(data)}>Download data (CSV)</button></span></li>{/if}
+    <li><Icon type="code"/><span><button class="btn-link" on:click={() => showEmbed = !showEmbed}>{showEmbed ? "Hide embed code" : `Embed ${type}`}</button></span></li>
+  </ul>
+  {#if showEmbed}
+  <div class="content-embed">
+    <Textarea value={embedCode} rows={4} width={30} hideLabel/>
+    <Button small on:click={() => clip(embedCode, "Copied to clipboard!")}>Copy to clipboard</Button>
+  </div>
+  {/if}
 </div>
 
 <style>
   .content-block {
     border: 1px solid #999;
-    border-radius: 3px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
     padding: 8px;
   }
   h3.content-subhead {
@@ -21,5 +52,38 @@
   h3.content-subhead > span {
     font-size: 16px;
     font-weight: normal;
+  }
+  .content-actions {
+    background: var(--pale, #f0f0f0);
+    font-size: 16px;
+    padding: 6px 8px 12px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+  }
+  .content-actions > h4 {
+    margin: 0 0 4px;
+    font-size: 16px;
+  }
+  .content-actions ul {
+    margin: 0;
+    padding: 0;
+  }
+  .content-actions ul > li {
+    display: inline;
+  }
+  .content-actions ul > li + li {
+    margin-left: 12px;
+  }
+  .content-actions span {
+    display: inline-block;
+    transform: translateY(-2px);
+    margin-left: 6px;
+  }
+  .content-embed {
+    display: block;
+    width: 100%;
+  }
+  .content-embed :global(textarea) {
+    margin-top: 8px;
   }
 </style>

@@ -35,7 +35,7 @@
 </script>
 
 <div class="map-container">
-  <Map style="{base}/data/mapstyle.json" location={{bounds: [[ -9, 49 ], [ 2, 61 ]]}} controls>
+  <Map style="{base}/data/mapstyle.json" location={{bounds: [-8.65, 49.8823, 1.7637, 60.8608]}} options={{fitBoundsOptions: {padding: 10}, maxBounds: [-19, 48, 12, 62], cooperativeGestures: true, preserveDrawingBuffer: true}} controls>
     <MapSource id="features" type="geojson" data={featureCollection(features, data)} promoteId="areacd">
       <MapLayer id="fills" type="fill" paint={{"fill-color": ["get", "color"], "fill-opacity": 0.7}} order="place_other" hover {hovered} let:hovered on:hover={doHover} select {selected} on:select={doSelect}/>
       <MapLayer id="lines" type="line" paint={{"line-color": "white", "line-width": 0.5}} order="place_other"/>
