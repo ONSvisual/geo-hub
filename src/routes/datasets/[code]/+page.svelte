@@ -65,7 +65,7 @@
     <ContentBlock title={data.indicator.label} unit={getUnit(data.indicator)}>
       <Dropdown id="year" options={data.years} width={10} bind:value={year} on:change={refreshData}/>
       <Dropdown options={data.geos.groups} bind:value={geoGroup} on:change={refreshData}/>
-      <Map data={mapData.data} breaks={mapData.breaks} codes={mapData.codes} features={data.features} {selected} on:select={doSelect}/>
+      <Map data={mapData.data} breaks={mapData.breaks} codes={mapData.codes} features={data.features} unit={getUnit(data.indicator)} {selected} on:select={doSelect}/>
     </ContentBlock>
   </NavSection>
   <NavSection title="Beeswarm">

@@ -47,22 +47,24 @@
 	$: cells = makeCells(data.map(d => d.value));
 </script>
 
-<div class="container" style="height: {height}px" on:mouseleave={doHover}>
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div class="container" style:height="{height}px" on:mouseleave={doHover}>
 	{#each breaks.slice(1) as brk, i}
-		<div class="block" style="width: {100 / (breaks.length - 1)}%; left: {i * (100 / (breaks.length - 1))}%; background-color: {colors[i]};"/>
-		<div class="line" style="left: {i * (100 / (breaks.length - 1))}%;"/>
-		<div class="tick" style="left: {i * (100 / (breaks.length - 1))}%; transform: translateX({i == 0 && snapTicks ? '-2px' : '-50%'});">{formatTick(breaks[i])}</div>
+		<div class="block" style:width="{100 / (breaks.length - 1)}%" style:left="{i * (100 / (breaks.length - 1))}%" style:background-color="{colors[i]}"/>
+		<div class="line" style:left="{i * (100 / (breaks.length - 1))}%"/>
+		<div class="tick" style:left="{i * (100 / (breaks.length - 1))}%" style:transform="translateX({i == 0 && snapTicks ? '-2px' : '-50%'})">{formatTick(breaks[i])}</div>
 	{/each}
-	<div class="line" style="right: 0;"/>
-	<div class="tick" style="right: 0; transform: translateX({snapTicks ? '2px' : '50%'});">{formatTick(breaks[breaks.length - 1])}{suffix}</div>
+	<div class="line" style:right="0"/>
+	<div class="tick" style:right="0" style:transform="translateX({snapTicks ? '2px' : '50%'})">{formatTick(breaks[breaks.length - 1])}{suffix}</div>
 	{#each data as d, i (d.areacd)}
+		<!-- svelte-ignore a11y-click-events-have-key-events -->
 		<div class="block" style:width="{pos(cells[i][1], breaks) - pos(cells[i][0], breaks)}%" style:left="{pos(cells[i][0], breaks)}%" on:mouseenter={(e) => doHover(e, d)} on:click={(e) => doSelect(e, d)}/>
 		{#if hovered === d.areacd}
-			<div class="marker marker-hovered" style="width: {lineWidth}px; left: calc({pos(d.value, breaks)}% - {lineWidth / 2}px);"/>
-			<div class="value value-hovered" style="left: {pos(d.value, breaks)}%">{d.value}{suffix}</div>
-		{:else if selected === d.areacd}
-			<div class="marker" style="width: {lineWidth}px; left: calc({pos(d.value, breaks)}% - {lineWidth / 2}px);"/>
-			<div class="value" style="left: {pos(d.value, breaks)}%">{d.value}{suffix}</div>
+			<div class="marker" style:width="{lineWidth}px" style:left="calc({pos(d.value, breaks)}% - {lineWidth / 2}px)"/>
+			<div class="value">{d.areanm}, {d.value}{suffix}</div>
+		{:else if selected === d.areacd && selected !== hovered}
+			<div class="marker" style:width="{lineWidth}px" style:left="calc({pos(d.value, breaks)}% - {lineWidth / 2}px)" style:opacity="{hovered ? 0.4 : 1}"/>
+			{#if !hovered}<div class="value">{d.areanm}, {d.value}{suffix}</div>{/if}
 		{/if}
 	{/each}
 </div>
@@ -96,22 +98,24 @@
 	.marker {
 		position: absolute;
 		z-index: 2;
-		top: -10px;
-		height: calc(100% + 10px);
-		background-color: black;
+		top: -5px;
+		width: 0; 
+		height: 0; 
+		border-left: 10px solid transparent;
+		border-right: 10px solid transparent;
+		border-top: 18px solid currentColor;
 		pointer-events: none;
+		transform: translateX(-8px);
 	}
 	.value {
+		font-size: 16px;
 		position: absolute;
-		top: -32px;
+		top: -30px;
 		text-align: center;
-		transform: translateX(-50%);
+		/* transform: translateX(-50%); */
 		background-color: rgba(255,255,255,.8);
 	}
 	.marker-hovered {
-		background-color: orange;
-	}
-	.value-hovered {
 		color: orange;
 	}
 </style>
