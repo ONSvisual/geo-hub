@@ -159,6 +159,7 @@ ORDER BY ?label`);
         const source_str = row.description_md
           .match(/(?<=###\sSource\n\n)(.*?)(?=\n\n)/s)?.[0]
           ?.replace(/\(.*?\)|\[|\]/gm, "") || null;
+        console.log(row.label, source_str, row);
         row.sources = typeof source_str === "string" ? source_str.match(/(?<=:\s)(.*?)(?=\s$)/gm) : [];
         return row;
       });

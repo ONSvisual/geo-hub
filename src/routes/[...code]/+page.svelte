@@ -70,7 +70,7 @@
 			topics = newDatasets.topics;
 			topic = topics?.[0] || null;
 			datasets = newDatasets.datasets;
-			console.log("datasets", newDatasets);
+			// console.log("datasets", newDatasets);
 		} else {
 			topics = null, topic = null, datasets = null;
 		}
@@ -335,7 +335,14 @@
 						{#each datasets as dataset, i}
 						<li class:visuallyhidden={topic && dataset.topic !== topic.label}>
 							<a class="dataset-title" href="https://beta.gss-data.org.uk/cube/explore?uri={encodeURIComponent(dataset.uri)}" rel="nofollow" target="_blank">{dataset.label}</a><span class="link-ext-icon"><Icon type="launch"/></span>
-							<span class="dataset-source">{dataset.sources?.length > 1 ? "Sources" : "Source"}: {dataset.sources.join(", ")}</span>
+							<span class="dataset-source">
+								{dataset.sources?.length > 1 ? "Sources" : "Source"}:
+								{#if dataset?.sources}
+									{dataset?.sources?.join(", ")}
+								{:else}
+								Office for National Statistics
+								{/if}
+							</span>
 							<span class="dataset-description">{dataset.description}</span>
 						</li>
 						{/each}
