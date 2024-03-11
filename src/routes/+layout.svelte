@@ -21,16 +21,16 @@
   };
 </script>
 
-<AnalyticsBanner {analyticsId} {analyticsProps}/>
+<!-- <AnalyticsBanner {analyticsId} {analyticsProps}/>
 <PhaseBanner url="https://www.ons.gov.uk/feedback"/>
 <ONSHeader {lang}/>
-<CensusBanner/>
+<CensusBanner/> -->
 
 <main id="main" tabindex="-1">
   <slot/>
 </main>
 
-<ONSFooter/>
+<!-- <ONSFooter/> -->
 
 <style>
   h1 {

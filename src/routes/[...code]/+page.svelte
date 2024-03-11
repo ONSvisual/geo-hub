@@ -10,6 +10,7 @@
 		geoCodesLookup,
 		mapSources,
 		noIndex,
+    redirectBase,
 	} from "$lib/config";
 	import {
 		makeGeoJSON,
@@ -46,6 +47,7 @@
 	async function pageLoad() {
 		let code = $page.url.searchParams.get("code");
 		if (!data.place && code) {
+			goto(`${redirectBase}/areas/${code}`);
 			const newData = await getPlace(code);
 			type = newData.type;
 			place = newData.place;
@@ -133,6 +135,7 @@
 
 <svelte:head>
   {#if place}
+	<meta http-equiv="refresh" content="0; URL='{redirectBase}/areas/{place.areacd}'" />
 	<title>{`${getName(place)} facts and figures - ${place.areacd} - ONS`}</title>
 	<link rel="icon" href="{assets}/favicon.ico" />
   <link rel="canonical" href="{assets}/{makePath(place.areacd)}" />
@@ -150,6 +153,7 @@
 </svelte:head>
 
 {#if place}
+<div style:display="none">
 <Titleblock
 	breadcrumb="{[{label: 'Home', url: '/', refresh: true}, {label: "Find a geographic area", url: `${base}/`}, ...[...place.parents].reverse().map(p => ({label: getName(p), url: `${base}/${makePath(p.areacd)}`})), {label: getName(place)}]}">
 	<Headline>
@@ -353,4 +357,6 @@
 	</Cards>
 	{/if}
 </Content>
+</div>
+<p><a href="{redirectBase}/areas/{place.areacd}">Redirecting...</a></p>
 {/if}
