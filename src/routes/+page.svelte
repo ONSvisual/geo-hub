@@ -44,6 +44,7 @@
 	<meta property="og:image:type" content="image/png" />
 	<meta name="description" content="Get data about people and the communities they live in, includes population, economy and health.">
 	<meta property="og:description" content="Get data about people and the communities they live in, includes population, economy and health." />
+  <meta name="robots" content="noindex">
 </svelte:head>
 
 <div style:display="none">

@@ -19,7 +19,8 @@
 		getPlace,
 		makePath,
 		filterChildren,
-        getDatasets,
+		getDatasets,
+		makeCanonicalSlug
 	} from "$lib/utils";
 	import { analyticsEvent } from "$lib/layout/AnalyticsBanner.svelte";
 	import topojson from "$lib/data/uk-ctry-rgn.json";
@@ -47,8 +48,8 @@
 	async function pageLoad() {
 		let code = $page.url.searchParams.get("code");
 		if (!data.place && code) {
-			goto(`${redirectBase}/areas/${code}`);
 			const newData = await getPlace(code);
+			goto(`${redirectBase}/areas/${makeCanonicalSlug(place.areacd, place.areanm)}`);
 			type = newData.type;
 			place = newData.place;
 			geometry = newData.geometry;
@@ -135,7 +136,7 @@
 
 <svelte:head>
   {#if place}
-	<meta http-equiv="refresh" content="0; URL='{redirectBase}/areas/{place.areacd}'" />
+	<meta http-equiv="refresh" content="0; URL='{redirectBase}/areas/{makeCanonicalSlug(place.areacd, place.areanm)}'" />
 	<title>{`${getName(place)} facts and figures - ${place.areacd} - ONS`}</title>
 	<link rel="icon" href="{assets}/favicon.ico" />
   <link rel="canonical" href="{assets}/{makePath(place.areacd)}" />
@@ -146,9 +147,7 @@
 	<meta property="og:image:type" content="image/png" />
 	<meta name="description" content="{`Facts and figures about people living ${getName(place, 'in')} (${place.areacd}) from the ONS.`}">
 	<meta property="og:description" content="{`Facts and figures about people living ${getName(place, 'in')} (${place.areacd}) from the ONS.`}" />
-  {#if noIndex.includes(place.typecd)}
   <meta name="robots" content="noindex">
-  {/if}
   {/if}
 </svelte:head>
 
@@ -358,5 +357,5 @@
 	{/if}
 </Content>
 </div>
-<p><a href="{redirectBase}/areas/{place.areacd}">Redirecting...</a></p>
+<p><a href="{redirectBase}/areas/{makeCanonicalSlug(place.areacd, place.areanm)}">Redirecting...</a></p>
 {/if}

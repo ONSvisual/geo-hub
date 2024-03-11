@@ -12,6 +12,7 @@ export const slugify = (str) =>
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim()
+    .replace(/&+/g, 'and') // special case 'and'
     .replace(/\s+/g, "-")
     .replace(/[^\w-]+/g, "")
     .replace(/--+/g, "-");
@@ -258,4 +259,10 @@ export function isNA(arr) {
 export function pluralise(str) {
   if (str.slice(-1) === "y") return str.slice(0, -1) + "ies";
   else return str + "s";
+}
+
+export const makeCanonicalSlug = (code, name) => {
+  let slug = code;
+  if (name) slug += `-${slugify(name)}`;
+  return slug;
 }
