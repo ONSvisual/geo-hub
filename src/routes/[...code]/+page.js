@@ -10,8 +10,6 @@ export async function load({ fetch, params, parent }) {
 	let { place, type, geometry } = await getPlace(code, fetch);
 	
 	if (building) console.log(code);
-
-	console.log(place.areanm)
 	
 	return { place, type, geometry, links};
 }
