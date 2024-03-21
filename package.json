@@ -27,8 +27,5 @@
     "svelte-select": "^4.4.7",
     "topojson-client": "^3.1.0"
   },
-  "type": "module",
-  "dependencies": {
-    "@onsvisual/svelte-components": "^0.1.66"
-  }
+  "type": "module"
 }
