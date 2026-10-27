@@ -1,4 +1,4 @@
-export const redirectBase = "https://explore-local-statistics.beta.ons.gov.uk";
+export const redirectBase = "https://www.ons.gov.uk/explore-local-statistics";
 export const assets = "https://www.ons.gov.uk/visualisations/areas";
 export const cdnUrl = "https://ons-dp-prod-cdn.s3.eu-west-2.amazonaws.com/maptiles/ap-geos/v1";
 
