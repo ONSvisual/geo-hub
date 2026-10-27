@@ -49,7 +49,7 @@
 		let code = $page.url.searchParams.get("code");
 		if (!data.place && code) {
 			const newData = await getPlace(code);
-			goto(`${redirectBase}/areas/${makeCanonicalSlug(place.areacd, place.areanm)}`);
+			goto(makeRedirectUrl(place));
 			type = newData.type;
 			place = newData.place;
 			geometry = newData.geometry;
@@ -130,13 +130,17 @@
 		e.detail.areanm = getName(place);
 		navTo(e, { noScroll: true }, "map");
 	}
+    function makeRedirectUrl(place) {
+        if (place.areacd.slice(0, 3) === "E11") return `${redirectBase}/`;
+        return `${redirectBase}/areas/${makeCanonicalSlug(place.areacd, place.areanm)}`;
+    }
 
 	$: productLinks = place ? filterLinks(links, place) : [];
 </script>
 
 <svelte:head>
   {#if place}
-	<meta http-equiv="refresh" content="0; URL='{redirectBase}/areas/{makeCanonicalSlug(place.areacd, place.areanm)}'" />
+	<meta http-equiv="refresh" content="0; URL='{makeRedirectUrl(place)}'" />
 	<title>{`${getName(place)} facts and figures - ${place.areacd} - ONS`}</title>
 	<link rel="icon" href="{assets}/favicon.ico" />
   <link rel="canonical" href="{assets}/{makePath(place.areacd)}" />
@@ -196,7 +200,7 @@
   {/if}
   <hr class="ons-divider"/>
 
-  <Cards title="Areas in {["K02", "E92", "N92", "S92", "W92"].includes(place.typecd) ? '' : 'and around'} {getName(place, "the")}" id="related">
+  <Cards title="Areas in {["K04", "E92", "W92"].includes(place.typecd) ? '' : 'and around'} {getName(place, "the")}" id="related">
 		<Card colspan={2} blank>
 			<div style:height="450px">
 				<Map bind:map style="{base}/data/mapstyle.json" location={{bounds: place.bounds}} options={{fitBoundsOptions: {padding: 20}, maxBounds: [-19, 48, 12, 62]}} controls>
@@ -357,5 +361,5 @@
 	{/if}
 </Content>
 </div>
-<p><a href="{redirectBase}/areas/{makeCanonicalSlug(place.areacd, place.areanm)}">Redirecting...</a></p>
+<p><a href={makeRedirectUrl(place)}>Redirecting...</a></p>
 {/if}

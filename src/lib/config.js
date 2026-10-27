@@ -1,6 +1,6 @@
 export const redirectBase = "https://explore-local-statistics.beta.ons.gov.uk";
 export const assets = "https://www.ons.gov.uk/visualisations/areas";
-export const cdnUrl = "https://ons-dp-prod-cdn.s3.eu-west-2.amazonaws.com/maptiles/ap-geos/v2";
+export const cdnUrl = "https://ons-dp-prod-cdn.s3.eu-west-2.amazonaws.com/maptiles/ap-geos/v1";
 
 export const geoNames = {
   "W04": {label: "community", plural: "communities", childGroup: true},
@@ -88,13 +88,13 @@ const notInTypes = (cds) => cds.map(cd => ["!", ["in", cd, ["get", "areacd"]]]);
 
 export const geoTypes = [
 	{
-    key: "uk",
-    codes: ["K02"],
-    source: "uk"
+    key: "ew",
+    codes: ["K04"],
+    source: "ew"
   },
 	{
     key: "ctry",
-    codes: ["E92", "S92", "N92", "W92"],
+    codes: ["E92", "W92"],
     pcio: "country",
     label: "country",
     plural: "countries",
@@ -110,7 +110,7 @@ export const geoTypes = [
   },
 	{
     key: "cauth",
-    codes: ["E06", "E09", "E10", "E47", "N09", "S12", "W06"],
+    codes: ["E06", "E09", "E10", "E47", "W06"],
     label: "upper-tier/combined authority",
     plural: "upper-tier/combined authorities",
     source: "la",
@@ -118,7 +118,7 @@ export const geoTypes = [
   },
 	{
     key: "utla",
-    codes: ["E06", "E08", "E09", "E10", "N09", "S12", "W06"],
+    codes: ["E06", "E09", "E10", "E11", "W06"],
     pcio: "admin_county",
     label: "upper-tier/unitary authority",
     plural: "upper-tier/unitary authorities",
@@ -127,7 +127,7 @@ export const geoTypes = [
   },
 	{
     key: "ltla",
-    codes: ["E06", "E07", "E08", "E09", "N09", "S12", "W06"],
+    codes: ["E06", "E07", "E08", "E09", "W06"],
     pcio: "admin_district",
     label: "lower-tier/unitary authority",
     plural: "lower-tier/unitary authorities",
@@ -136,7 +136,7 @@ export const geoTypes = [
   },
   {
     key: "wpc",
-    codes: ["E14", "N06", "S14", "W07"],
+    codes: ["E14", "W07"],
     pcio: "parliamentary_constituency",
     label: "parliamentary constituency",
     plural: "parliamentary constituencies",

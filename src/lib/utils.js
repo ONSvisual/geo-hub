@@ -33,6 +33,7 @@ export async function getData(url, fetch = window.fetch) {
 }
 
 function makeChildTypes(childcds) {
+    console.log(childcds);
   let childTypes = Array.from(new Set(childcds.sort((a, b) => a.localeCompare(b)).map(cd => geoCodesLookup[cd])))
     .filter((d, i, arr) => arr.map(a => a.key).indexOf(d.key) === i);
   const filterKeys = ["cauth", "utla", "ltla"].filter(key => childTypes.map(t => t.key).includes(key));
@@ -45,10 +46,13 @@ export async function getPlace(code, fetch = window.fetch) {
   if (!code.match(/[EKNSW]\d{8}\b/)) return {place: null, type: null, geometry: null};
   try {
 		let typeCode = code.slice(0, 3);
-		let res = await fetch(`${cdnUrl}/${typeCode}/${code}.json`);
+        let url = `${cdnUrl}/${typeCode}/${code}.json`;
+        console.log(url);
+		let res = await fetch(url);
 		let json = await res.json();
 
-		json.properties.childTypes = makeChildTypes(json.properties.child_typecds);
+        const child_typecds = [...new Set(json.properties.children.map(d => d.areacd.slice(0, 3)))];
+		json.properties.childTypes = makeChildTypes(child_typecds);
 		
     return {
       place: json.properties,

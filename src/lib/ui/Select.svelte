@@ -11,8 +11,6 @@
 
 	export const regionReverseLookup = {
 		"England": "E92000001",
-		"Northern Ireland": "N92000002",
-		"Scotland": "S92000003",
 		"Wales": "W92000004",
 		"North East": "E12000001",
 		"North West": "E12000002",
