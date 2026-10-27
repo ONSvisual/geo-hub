@@ -33,7 +33,6 @@ export async function getData(url, fetch = window.fetch) {
 }
 
 function makeChildTypes(childcds) {
-    console.log(childcds);
   let childTypes = Array.from(new Set(childcds.sort((a, b) => a.localeCompare(b)).map(cd => geoCodesLookup[cd])))
     .filter((d, i, arr) => arr.map(a => a.key).indexOf(d.key) === i);
   const filterKeys = ["cauth", "utla", "ltla"].filter(key => childTypes.map(t => t.key).includes(key));
@@ -47,7 +46,6 @@ export async function getPlace(code, fetch = window.fetch) {
   try {
 		let typeCode = code.slice(0, 3);
         let url = `${cdnUrl}/${typeCode}/${code}.json`;
-        console.log(url);
 		let res = await fetch(url);
 		let json = await res.json();
 
