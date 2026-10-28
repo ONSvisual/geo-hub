@@ -222,3 +222,12 @@ export const geoTypesLookup = (() => {
 	geoTypes.forEach(g => lookup[g.key] = g);
 	return lookup;
 })();
+
+export const metCountiesLookup = {
+    E11000001: {areacd: "E47000001", areanm: "Greater Manchester"},
+    E11000002: {areacd: "E47000004", areanm: "Liverpool City Region"},
+    E11000003: {areacd: "E47000002", areanm: "South Yorkshire"},
+    E11000005: {areacd: "E47000007", areanm: "West Midlands"},
+    E11000006: {areacd: "E47000003", areanm: "West Yorkshire"},
+    E11000007: {areacd: "E47000014", areanm: "North East"}
+};

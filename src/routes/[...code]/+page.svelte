@@ -10,7 +10,8 @@
 		geoCodesLookup,
 		mapSources,
 		noIndex,
-    redirectBase,
+        redirectBase,
+        metCountiesLookup
 	} from "$lib/config";
 	import {
 		makeGeoJSON,
@@ -131,8 +132,9 @@
 		navTo(e, { noScroll: true }, "map");
 	}
     function makeRedirectUrl(place) {
-        if (place.areacd.slice(0, 3) === "E11") return `${redirectBase}/`;
-        return `${redirectBase}/areas/${makeCanonicalSlug(place.areacd, place.areanm)}`;
+        const _place = place?.areacd?.slice?.(0, 3) === "E11" ? metCountiesLookup[place.areacd] : place;
+        if (!_place) return `${redirectBase}/`;
+        return `${redirectBase}/areas/${makeCanonicalSlug(_place.areacd, _place.areanm)}`;
     }
 
 	$: productLinks = place ? filterLinks(links, place) : [];
